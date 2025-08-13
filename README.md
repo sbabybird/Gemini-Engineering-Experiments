@@ -10,7 +10,7 @@ Here is a list of the projects currently in this repository.
 
 | Project       | Description                                                                                             | Live Demo                                                                                                         | Source Code                               |
 |---------------|---------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
-| Retro Tetris  | A classic Tetris game with a retro CRT aesthetic, particle effects, and polished gameplay features.     | [**View Live**](https://[YOUR_USERNAME].github.io/Gemini-Engineering-Experiments/projects/RetroTetris/) | [./projects/RetroTetris/](./projects/RetroTetris/) |
+| Retro Tetris  | A classic Tetris game with a retro CRT aesthetic, particle effects, and polished gameplay features.     | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/RetroTetris/) | [./projects/RetroTetris/](./projects/RetroTetris/) |
 | *...more to come* |                                                                                                         |                                                                                                                   |                                           |
 
 
