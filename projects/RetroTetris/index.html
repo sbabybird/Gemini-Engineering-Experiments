@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Tetris</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="crt-effect"></div>
+    <div id="game-container">
+        <div class="main-panel">
+            <canvas id="game-canvas" width="300" height="600"></canvas>
+        </div>
+        <div id="side-panel">
+            <div class="info-box">
+                <h2>SCORE</h2>
+                <p id="score">0</p>
+            </div>
+            <div class="info-box">
+                <h2>NEXT</h2>
+                <canvas id="next-canvas" width="120" height="120"></canvas>
+            </div>
+            <div class="info-box">
+                <h2>LINES</h2>
+                <p id="lines">0</p>
+            </div>
+            <div class="info-box">
+                <h2>LEVEL</h2>
+                <p id="level">1</p>
+            </div>
+            <div class="controls-box">
+                <h3>CONTROLS</h3>
+                <p>MOVE: ← → / A D</p>
+                <p>ROTATE: ↑ / W</p>
+                <p>SOFT DROP: ↓ / S</p>
+                <p>HARD DROP: SPACE</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
