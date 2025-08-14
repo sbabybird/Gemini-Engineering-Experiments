@@ -11,6 +11,7 @@ Here is a list of the projects currently in this repository.
 | Project       | Description                                                                                             | Live Demo                                                                                                         | Source Code                               |
 |---------------|---------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
 | Retro Tetris  | A classic Tetris game with a retro CRT aesthetic, particle effects, and polished gameplay features.     | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/RetroTetris/) | [./projects/RetroTetris/](./projects/RetroTetris/) |
+| Procedural Solar System | A 3D solar system simulation with procedurally generated planets and stars using Three.js and GLSL shaders. | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/SolarSystem/)   | [./projects/SolarSystem/](./projects/SolarSystem/)   |
 | *...more to come* |                                                                                                         |                                                                                                                   |                                           |
 
 

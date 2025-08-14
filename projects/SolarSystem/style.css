@@ -1,0 +1,31 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+canvas {
+    display: block;
+}
+
+#info-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #444;
+    border-radius: 5px;
+    z-index: 100;
+}
+
+#info-panel h3 {
+    margin: 0 0 10px 0;
+    color: #00aaff;
+}
+
+#info-panel p {
+    margin: 5px 0;
+}
