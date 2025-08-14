@@ -12,6 +12,7 @@ Here is a list of the projects currently in this repository.
 |---------------|---------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
 | Retro Tetris  | A classic Tetris game with a retro CRT aesthetic, particle effects, and polished gameplay features.     | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/RetroTetris/) | [./projects/RetroTetris/](./projects/RetroTetris/) |
 | Procedural Solar System | A 3D solar system simulation with procedurally generated planets and stars using Three.js and GLSL shaders. | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/SolarSystem/)   | [./projects/SolarSystem/](./projects/SolarSystem/)   |
+| Pitch Jumper  | A voice-controlled game where your pitch determines the player's altitude, built with the Web Audio API.      | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/PitchJumper/)     | [./projects/PitchJumper/](./projects/PitchJumper/)     |
 | *...more to come* |                                                                                                         |                                                                                                                   |                                           |
 
 
