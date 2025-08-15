@@ -10,6 +10,7 @@ window.addEventListener('load', () => {
     const pitchBar = document.getElementById('pitch-bar');
     const speedValue = document.getElementById('speed-value');
     const speedBar = document.getElementById('speed-bar');
+    const distanceValue = document.getElementById('distance-value');
 
     // --- Game & Engine Setup ---
     const screenWidth = window.innerWidth;
@@ -61,6 +62,7 @@ window.addEventListener('load', () => {
     let gameState = 'init';
     let engineState = 'normal'; let burnoutTimer = 0; const BURNOUT_DURATION = 180; let highPitchCounter = 0;
     let flipTimer = 0; const FLIP_THRESHOLD = 120;
+    let distanceTraveled = 0;
 
     // --- Visuals Data ---
     const visuals = {
@@ -74,37 +76,58 @@ window.addEventListener('load', () => {
     const terrainNoiseScale = 0.004; const terrainAmplitude = 150;
     function getTerrainY(x) { return screenHeight * 0.8 + Perlin.noise(x * terrainNoiseScale, 0, 0) * terrainAmplitude; }
     function generateTerrainSegment() {
-        const segmentLength = rampNext ? 500 : 1500 + Math.random() * 1000;
-        const segmentDetail = rampNext ? 20 : 60;
-        let vertices = [];
+        const segmentLength = rampNext ? 600 : 1500 + Math.random() * 1000;
+        const step = 40;
+        const numSteps = Math.floor(segmentLength / step);
         const startY = getTerrainY(nextX - 10);
+
+        let segmentComposite = Composite.create();
+        let surfaceVertices = [];
+
         if (rampNext) {
-            for (let i = 0; i < segmentDetail; i++) { const p = i / (segmentDetail - 1); vertices.push({ x: nextX + p * segmentLength, y: startY - p * 200 }); }
-            nextX += segmentLength + 450 + Math.random() * 300;
+            for (let i = 0; i < numSteps; i++) {
+                const p1 = i / numSteps; const p2 = (i + 1) / numSteps;
+                const x1 = nextX + p1 * segmentLength, y1 = startY - p1 * 250;
+                const x2 = nextX + p2 * segmentLength, y2 = startY - p2 * 250;
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const block = Bodies.rectangle((x1+x2)/2, (y1+y2)/2, length, 20, { angle: angle, isStatic: true, friction: 1.0, restitution: 0, render: { visible: false } });
+                Composite.add(segmentComposite, block);
+                if (i === 0) surfaceVertices.push({x: x1, y: y1});
+                surfaceVertices.push({x: x2, y: y2});
+            }
+            nextX += segmentLength + 500 + Math.random() * 400; // Wider gaps
             rampNext = false;
         } else {
-            for (let i = 0; i < segmentDetail; i++) { const x = nextX + (i / (segmentDetail - 1)) * segmentLength; vertices.push({ x: x, y: getTerrainY(x) }); }
+            for (let i = 0; i < numSteps; i++) {
+                const x1 = nextX + i * step;
+                const x2 = nextX + (i + 1) * step;
+                const y1 = getTerrainY(x1);
+                const y2 = getTerrainY(x2);
+                const angle = Math.atan2(y2 - y1, x2 - x1);
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const block = Bodies.rectangle((x1+x2)/2, (y1+y2)/2, length, 20, { angle: angle, isStatic: true, friction: 1.0, restitution: 0, render: { visible: false } });
+                Composite.add(segmentComposite, block);
+                if (i === 0) surfaceVertices.push({x: x1, y: y1});
+                surfaceVertices.push({x: x2, y: y2});
+            }
             nextX += segmentLength;
-            if (Math.random() < 0.2) rampNext = true;
+            if (Math.random() < 0.35) rampNext = true; // More gaps
         }
-        const terrainVertices = [...vertices];
-        terrainVertices.push({ x: vertices[vertices.length - 1].x, y: screenHeight + 200 });
-        terrainVertices.push({ x: vertices[0].x, y: screenHeight + 200 });
-        const terrain = Bodies.fromVertices(vertices[0].x + (vertices[vertices.length-1].x - vertices[0].x)/2, screenHeight, [terrainVertices], { isStatic: true, friction: 1.0, restitution: 0, render: { visible: false } }, true);
-        terrain.surfaceVertices = vertices;
-        World.add(world, terrain);
-        terrainSegments.push(terrain);
+        segmentComposite.surfaceVertices = surfaceVertices;
+        World.add(world, segmentComposite);
+        terrainSegments.push(segmentComposite);
     }
 
     // --- Car (Arcade Physics Model) ---
     let car;
     function createCar(x, y) {
-        const carBody = Bodies.rectangle(x, y, 120, 35, { 
-            density: 0.006, 
-            friction: 0.7, 
-            frictionAir: 0.01, 
-            restitution: 0.2,
-            chamfer: { radius: 10 } // Rounded corners
+        const carBody = Bodies.rectangle(x, y, 60, 17.5, { 
+            density: 0.008, 
+            friction: 0.8, 
+            frictionAir: 0.015, 
+            restitution: 0.1,
+            chamfer: { radius: 5 }
         });
         World.add(world, carBody);
         return carBody;
@@ -121,8 +144,13 @@ window.addEventListener('load', () => {
             for(let i = 0; i < 3; i++) generateTerrainSegment();
             car = createCar(200, getTerrainY(200) - 50);
             flipTimer = 0;
-        } else if (newState === 'playing') { instructions.style.opacity = 0; } 
-        else if (newState === 'gameOver') { instructions.innerHTML = '<p>GAME OVER</p><p>Click to Restart</p>'; instructions.style.opacity = 1; }
+            distanceTraveled = 0;
+        } else if (newState === 'playing') {
+            instructions.style.opacity = 0;
+        } else if (newState === 'gameOver') {
+            instructions.innerHTML = `<p>GAME OVER</p><p>Distance: ${distanceTraveled}m</p><p>Click to Restart</p>`;
+            instructions.style.opacity = 1;
+        }
     }
 
     // --- Pitch Detection ---
@@ -149,12 +177,11 @@ window.addEventListener('load', () => {
     }
 
     // --- Physics Loop ---
-    const MAX_FORCE = 0.08;
+    const MAX_FORCE = 0.035; // Tuned force
     let targetForce = 0, currentForce = 0;
     Events.on(engine, 'beforeUpdate', (event) => {
         if (!car) return;
         if (gameState === 'playing') {
-            // Calculate smoothed forward force
             if (engineState === 'burnout') { burnoutTimer--; if (burnoutTimer <= 0) engineState = 'normal'; }
             else {
                 if (currentPitch > PITCH_MIN) {
@@ -165,27 +192,23 @@ window.addEventListener('load', () => {
                 } else { targetForce = 0; engineState = 'normal'; highPitchCounter = 0; }
             }
             if (engineState === 'burnout') targetForce = 0;
-            currentForce += (targetForce - currentForce) * 0.1;
+            currentForce += (targetForce - currentForce) * 0.15; // More responsive throttle
             let finalForce = engineState === 'boosting' ? currentForce * 1.5 : currentForce;
-            
-            // Apply force to the center of the car body
             Body.applyForce(car, car.position, { x: finalForce, y: 0 });
 
-            // Flip detection
             const isFlipped = Math.abs(car.angle) > 2.2;
             if (isFlipped && Math.abs(car.angularVelocity) < 0.05) { flipTimer++; } else { flipTimer = 0; }
             if (flipTimer > 120) { changeState('gameOver'); }
-
-            // World Streaming & Death
-            if (car.position.x > nextX - screenWidth * 1.5) { generateTerrainSegment(); if (terrainSegments.length > 5) World.remove(world, terrainSegments.shift()); }
+            if (car.position.x > nextX - screenWidth * 1.5) { generateTerrainSegment(); if (terrainSegments.length > 5) { World.remove(world, terrainSegments.shift()); } }
             if (car.position.y > screenHeight + 100) { changeState('gameOver'); }
         }
-        // UI Update
+        distanceTraveled = Math.floor(car.position.x / 10);
         const speed = Math.abs(car.velocity.x * 5).toFixed(1);
         pitchValue.textContent = `${Math.round(currentPitch)} Hz`;
         pitchBar.style.width = `${Math.min(100, (currentPitch - PITCH_MIN) / (PITCH_MAX - PITCH_MIN) * 100)}%`;
         speedValue.textContent = `${speed} km/h`;
         speedBar.style.width = `${Math.min(100, speed / 200 * 100)}%`;
+        distanceValue.textContent = `${distanceTraveled} m`;
         if (engineState === 'burnout') { dashboard.style.borderColor = '#ff4500'; } 
         else if (engineState === 'boosting') { dashboard.style.borderColor = '#ffff00'; } 
         else { dashboard.style.borderColor = '#555'; }
@@ -195,6 +218,8 @@ window.addEventListener('load', () => {
     function draw() {
         if (!car) { requestAnimationFrame(draw); return; }
         const cameraX = car.position.x;
+
+        ctx.clearRect(0, 0, screenWidth, screenHeight);
 
         ctx.save();
         ctx.translate(-cameraX + screenWidth / 2, 0);
@@ -226,10 +251,13 @@ window.addEventListener('load', () => {
         // 3. Visual Terrain
         ctx.save();
         terrainSegments.forEach(segment => {
-            if (segment.bounds.max.x < cameraX - screenWidth/2 - 100 || segment.bounds.min.x > cameraX + screenWidth/2 + 100) return;
+            const bounds = Composite.bounds(segment);
+            if (bounds.max.x < cameraX - screenWidth/2 - 100 || bounds.min.x > cameraX + screenWidth/2 + 100) return;
             ctx.beginPath();
             ctx.moveTo(segment.surfaceVertices[0].x, segment.surfaceVertices[0].y);
-            for (let i = 1; i < segment.surfaceVertices.length; i++) { ctx.lineTo(segment.surfaceVertices[i].x, segment.surfaceVertices[i].y); }
+            for (let i = 1; i < segment.surfaceVertices.length; i++) {
+                ctx.lineTo(segment.surfaceVertices[i].x, segment.surfaceVertices[i].y);
+            }
             ctx.lineTo(segment.surfaceVertices[segment.surfaceVertices.length - 1].x, screenHeight);
             ctx.lineTo(segment.surfaceVertices[0].x, screenHeight);
             ctx.closePath();
@@ -242,13 +270,11 @@ window.addEventListener('load', () => {
         ctx.save();
         ctx.translate(car.position.x, car.position.y);
         ctx.rotate(car.angle);
-        // Body
         ctx.fillStyle = '#E02128';
-        ctx.fillRect(-60, -20, 120, 40);
-        // Cosmetic Wheels that rotate with car body
+        ctx.fillRect(-30, -10, 60, 20);
         ctx.fillStyle = '#333';
-        ctx.beginPath(); ctx.arc(-45, 0, 25, 0, 2*Math.PI); ctx.fill();
-        ctx.beginPath(); ctx.arc(45, 0, 25, 0, 2*Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(-22.5, 0, 12.5, 0, 2*Math.PI); ctx.fill();
+        ctx.beginPath(); ctx.arc(22.5, 0, 12.5, 0, 2*Math.PI); ctx.fill();
         ctx.restore();
 
         ctx.restore();

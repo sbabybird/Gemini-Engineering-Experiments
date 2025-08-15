@@ -75,6 +75,13 @@ canvas {
     border-radius: 5px;
 }
 
+.meter-bar-alt {
+    width: 100%; /* Static bar for now */
+    height: 100%;
+    background: linear-gradient(90deg, #ffdd00, #ff8800);
+    border-radius: 5px;
+}
+
 /* --- Instructions & Overlay --- */
 #instructions {
     position: absolute;
