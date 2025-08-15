@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitch Racer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Canvas will be inserted here -->
+        <div id="dashboard">
+            <div class="meter" id="pitch-meter">
+                <div class="meter-label">PITCH</div>
+                <div class="meter-value" id="pitch-value">0 Hz</div>
+                <div class="meter-bar-container">
+                    <div class="meter-bar" id="pitch-bar"></div>
+                </div>
+            </div>
+            <div class="meter" id="speed-meter">
+                <div class="meter-label">SPEED</div>
+                <div class="meter-value" id="speed-value">0 km/h</div>
+                <div class="meter-bar-container">
+                    <div class="meter-bar" id="speed-bar"></div>
+                </div>
+            </div>
+        </div>
+        <div id="instructions">
+            <!-- Content will be set by JS -->
+        </div>
+    </div>
+
+    <!-- Matter.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
