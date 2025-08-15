@@ -9,7 +9,7 @@ window.addEventListener('load', () => {
     // --- Audio Setup ---
     let audioContext, analyser, buf;
     const PITCH_MIN = 150; // C3
-    const PITCH_MAX = 600; // D5
+    const PITCH_MAX = 800; // D5 -> G5, wider range for less sensitivity
     const CONFIDENCE_THRESHOLD = 0.5;
 
     // --- Game State ---
@@ -22,7 +22,7 @@ window.addEventListener('load', () => {
         x: 80, y: canvas.height - 50, width: 30, height: 30,
         targetY: canvas.height - 50,
         draw() { ctx.fillStyle = '#ff4500'; ctx.fillRect(this.x, this.y, this.width, this.height); },
-        update() { this.y += (this.targetY - this.y) * 0.1; },
+        update() { this.y += (this.targetY - this.y) * 0.07; }, // Slower, smoother movement
         reset() { this.y = canvas.height - 50; this.targetY = this.y; }
     };
 
