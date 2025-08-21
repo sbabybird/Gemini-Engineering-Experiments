@@ -58,7 +58,7 @@ body {
 /* --- Game Container & Canvas --- */
 #game-container {
     flex-grow: 1;
-    position: relative; /* Needed for canvas positioning */
+    position: relative; 
     min-height: 0;
 }
 
@@ -67,4 +67,103 @@ canvas {
     width: 100%;
     height: 100%;
     background-color: #f0f0f0;
+}
+
+/* --- Property Panel --- */
+#property-panel {
+    position: absolute;
+    top: 70px; /* Lowered to avoid toolbar */
+    right: 15px;
+    width: 240px;
+    background: rgba(40, 40, 40, 0.9);
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    border: 1px solid #555;
+    z-index: 20;
+    overflow: hidden;
+    transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
+}
+
+#panel-header {
+    background-color: #333;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+
+#panel-content {
+    padding: 15px;
+    transition: opacity 0.2s ease-in-out;
+}
+
+#property-panel.collapsed {
+    width: 100px;
+    height: 42px;
+}
+
+#property-panel.collapsed #panel-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.property {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #444;
+}
+
+.property label {
+    font-size: 0.9em;
+}
+
+/* Custom Switch (Checkbox) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #28a745;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
 }

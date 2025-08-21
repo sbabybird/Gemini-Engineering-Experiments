@@ -7,6 +7,11 @@ window.addEventListener('load', () => {
     const toolbar = document.getElementById('toolbar');
     const clearButton = document.getElementById('clear-button');
     const pauseButton = document.getElementById('pause-button');
+    const propertyPanel = document.getElementById('property-panel');
+    const panelHeader = document.getElementById('panel-header');
+    const panelContent = document.getElementById('panel-content');
+    const motorCheckbox = document.getElementById('motor-checkbox');
+    const motorProperty = document.getElementById('motor-property');
 
     // --- Game & Engine Setup ---
     const screenWidth = gameContainer.clientWidth;
@@ -39,7 +44,7 @@ window.addEventListener('load', () => {
     ]);
 
     // --- Tool State & Mouse Management ---
-    let currentTool = 'polygon';
+    let currentTool = 'select';
     let isDrawing = false;
     let isPaused = false;
     let selectedBody = null;
@@ -57,25 +62,21 @@ window.addEventListener('load', () => {
     World.add(world, mouseConstraint);
 
     // --- Creation Functions ---
-    function createGear(x, y, radius, isPowered) {
+    function createGear(x, y, radius, isPowered = true) { // Gears are powered by default
         const gear = Bodies.circle(x, y, radius, { friction: 0.8, restitution: 0.1, density: 0.02 });
         gear.isGear = true;
-        if (isPowered) {
-            gear.isMotorized = true;
-        }
+        gear.isMotorized = isPowered;
         const axle = Constraint.create({ pointA: { x: x, y: y }, bodyB: gear, stiffness: 1 });
+        gear.axleConstraint = axle;
         const gearComposite = Composite.create({ bodies: [gear], constraints: [axle] });
         gear.parentComposite = gearComposite;
         World.add(world, gearComposite);
-        return gearComposite;
+        return gear;
     }
 
     // --- Tool Logic ---
     function handleMouseDown() {
-        if (mouseConstraint.body) { 
-            if (currentTool === 'select') { selectedBody = mouseConstraint.body; }
-            return;
-        }
+        if (mouseConstraint.body) { return; }
         isDrawing = true;
         const mousePos = mouse.position;
         if (currentTool === 'polygon') {
@@ -85,7 +86,7 @@ window.addEventListener('load', () => {
             chainStartLink = Bodies.circle(mousePos.x, mousePos.y, 10, { density: 0.1, friction: 0.8, render: { fillStyle: '#555'} });
             Composite.add(currentChain, chainStartLink);
             World.add(world, currentChain);
-        } else if (currentTool === 'powered-gear' || currentTool === 'passive-gear') {
+        } else if (currentTool === 'gear') {
             dragStartPoint = { x: mousePos.x, y: mousePos.y };
         }
     }
@@ -129,11 +130,11 @@ window.addEventListener('load', () => {
                 Composite.add(currentChain, closingConstraint);
             }
             currentChain = null; chainStartLink = null; canCloseChain = false;
-        } else if (currentTool === 'powered-gear' || currentTool === 'passive-gear') {
+        } else if (currentTool === 'gear') {
             if (!dragStartPoint) return;
             const radius = Math.hypot(mousePos.x - dragStartPoint.x, mousePos.y - dragStartPoint.y);
             if (radius > 10) {
-                createGear(dragStartPoint.x, dragStartPoint.y, radius, currentTool === 'powered-gear');
+                createGear(dragStartPoint.x, dragStartPoint.y, radius, true);
             }
             dragStartPoint = null;
         }
@@ -146,22 +147,53 @@ window.addEventListener('load', () => {
 
     Events.on(mouseConstraint, 'mousedown', (event) => {
         const body = mouseConstraint.body;
+        if (currentTool === 'select') {
+            setSelectedBody(body);
+        }
         if (body && body.isGear) {
-            draggedGearProps = { 
-                radius: body.circleRadius, 
-                isMotorized: body.isMotorized 
-            };
+            draggedGearProps = { radius: body.circleRadius, isMotorized: body.isMotorized };
             World.remove(world, body.parentComposite);
-            isDrawing = false; // Cancel any other drawing action
+            isDrawing = false;
         }
     });
 
     Events.on(mouseConstraint, 'mouseup', (event) => {
         if (draggedGearProps) {
-            const finalPosition = event.mouse.position;
-            createGear(finalPosition.x, finalPosition.y, draggedGearProps.radius, draggedGearProps.isMotorized);
+            createGear(event.mouse.position.x, event.mouse.position.y, draggedGearProps.radius, draggedGearProps.isMotorized);
             draggedGearProps = null;
         }
+    });
+
+    // --- Property Editor Logic ---
+    function setSelectedBody(body) {
+        if (body && body.isStatic) {
+            selectedBody = null;
+            return;
+        }
+        selectedBody = body;
+        
+        if (selectedBody && selectedBody.isGear) {
+            motorProperty.style.display = 'flex';
+            motorCheckbox.checked = selectedBody.isMotorized || false;
+            propertyPanel.classList.remove('collapsed');
+        } else {
+            motorProperty.style.display = 'none';
+            if (selectedBody) {
+                 propertyPanel.classList.remove('collapsed');
+            } else {
+                 propertyPanel.classList.add('collapsed');
+            }
+        }
+    }
+
+    motorCheckbox.addEventListener('change', () => {
+        if (selectedBody && selectedBody.isGear) {
+            selectedBody.isMotorized = motorCheckbox.checked;
+        }
+    });
+
+    panelHeader.addEventListener('click', () => {
+        propertyPanel.classList.toggle('collapsed');
     });
 
     // --- Main Loop ---
@@ -180,13 +212,13 @@ window.addEventListener('load', () => {
                 ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
                 for (let i = 1; i < currentPoints.length; i++) { ctx.lineTo(currentPoints[i].x, currentPoints[i].y); }
                 ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2; ctx.stroke();
-            } else if ((currentTool === 'powered-gear' || currentTool === 'passive-gear') && dragStartPoint) {
+            } else if (currentTool === 'gear' && dragStartPoint) {
                 const radius = Math.hypot(mouse.position.x - dragStartPoint.x, mouse.position.y - dragStartPoint.y);
                 ctx.beginPath(); ctx.arc(dragStartPoint.x, dragStartPoint.y, radius, 0, 2 * Math.PI);
                 ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2; ctx.stroke();
             }
         }
-        if (draggedGearProps) { // Draw ghost gear while dragging
+        if (draggedGearProps) { 
             ctx.save();
             ctx.globalAlpha = 0.5;
             const radius = draggedGearProps.radius;
@@ -240,7 +272,9 @@ window.addEventListener('load', () => {
             currentTool = e.target.dataset.tool;
             activeToolButton = e.target;
             activeToolButton.classList.add('active');
-            if (currentTool !== 'select') { selectedBody = null; }
+            if (currentTool !== 'select') {
+                setSelectedBody(null);
+            }
         }
     });
 
@@ -249,7 +283,7 @@ window.addEventListener('load', () => {
         const allBodies = Composite.allBodies(world);
         const bodiesToRemove = allBodies.filter(body => !body.isStatic);
         World.remove(world, bodiesToRemove);
-        selectedBody = null;
+        setSelectedBody(null);
     });
 
     pauseButton.addEventListener('click', () => {
@@ -267,7 +301,7 @@ window.addEventListener('load', () => {
             } else {
                  World.remove(world, selectedBody);
             }
-            selectedBody = null;
+            setSelectedBody(null);
         }
     });
 });

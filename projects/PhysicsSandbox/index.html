@@ -11,17 +11,28 @@
         <button data-tool="select">Select/Edit</button>
         <button data-tool="polygon">Draw Stone</button>
         <button data-tool="chain">Draw Chain</button>
-        <button data-tool="powered-gear">Powered Gear</button>
-        <button data-tool="passive-gear">Passive Gear</button>
-        <button data-tool="elastic">Draw Elastic</button>
+        <button data-tool="gear">Create Gear</button>
         <button id="clear-button">Clear World</button>
         <button id="pause-button">Pause</button>
     </div>
     <div id="game-container">
         <!-- Canvas will be inserted here by script.js -->
     </div>
+    <div id="property-panel">
+        <div id="panel-header">Properties</div>
+        <div id="panel-content">
+            <div class="property" id="motor-property">
+                <label for="motor-checkbox">Is Motorized</label>
+                <label class="switch">
+                    <input type="checkbox" id="motor-checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+             <!-- More properties can be added here -->
+        </div>
+    </div>
 
-        <script src="lib/decomp.min.js"></script>
+    <script src="lib/decomp.min.js"></script>
     <script src="lib/matter.min.js"></script>
     <script src="script.js"></script>
 </body>
