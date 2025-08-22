@@ -9,9 +9,10 @@ window.addEventListener('load', () => {
     const pauseButton = document.getElementById('pause-button');
     const propertyPanel = document.getElementById('property-panel');
     const panelHeader = document.getElementById('panel-header');
-    const panelContent = document.getElementById('panel-content');
-    const motorCheckbox = document.getElementById('motor-checkbox');
     const motorProperty = document.getElementById('motor-property');
+    const motorCheckbox = document.getElementById('motor-checkbox');
+    const powerProperty = document.getElementById('power-property');
+    const powerSlider = document.getElementById('power-slider');
 
     // --- Game & Engine Setup ---
     const screenWidth = gameContainer.clientWidth;
@@ -53,7 +54,6 @@ window.addEventListener('load', () => {
     let chainStartLink = null;
     let canCloseChain = false;
     let dragStartPoint = null;
-    let draggedGearProps = null;
     const mouse = Mouse.create(canvas);
     const mouseConstraint = MouseConstraint.create(engine, {
         mouse: mouse,
@@ -62,23 +62,24 @@ window.addEventListener('load', () => {
     World.add(world, mouseConstraint);
 
     // --- Creation Functions ---
-    function createGear(x, y, radius, isPowered = true) { // Gears are powered by default
+    function createGear(x, y, radius, isPowered = false, motorPower = 0.5) {
         const gear = Bodies.circle(x, y, radius, { friction: 0.8, restitution: 0.1, density: 0.02 });
         gear.isGear = true;
         gear.isMotorized = isPowered;
+        gear.motorPower = motorPower;
         const axle = Constraint.create({ pointA: { x: x, y: y }, bodyB: gear, stiffness: 1 });
         gear.axleConstraint = axle;
-        const gearComposite = Composite.create({ bodies: [gear], constraints: [axle] });
-        gear.parentComposite = gearComposite;
-        World.add(world, gearComposite);
+        World.add(world, [gear, axle]);
         return gear;
     }
 
-    // --- Tool Logic ---
-    function handleMouseDown() {
-        if (mouseConstraint.body) { return; }
+    // --- Event Handlers ---
+    function handleMouseDown(event) {
+        const bodiesUnderMouse = Query.point(Composite.allBodies(world), mouse.position);
+        if (bodiesUnderMouse.length > 0) { return; }
         isDrawing = true;
         const mousePos = mouse.position;
+        dragStartPoint = { x: mousePos.x, y: mousePos.y };
         if (currentTool === 'polygon') {
             currentPoints = [{ x: mousePos.x, y: mousePos.y }];
         } else if (currentTool === 'chain') {
@@ -86,12 +87,10 @@ window.addEventListener('load', () => {
             chainStartLink = Bodies.circle(mousePos.x, mousePos.y, 10, { density: 0.1, friction: 0.8, render: { fillStyle: '#555'} });
             Composite.add(currentChain, chainStartLink);
             World.add(world, currentChain);
-        } else if (currentTool === 'gear') {
-            dragStartPoint = { x: mousePos.x, y: mousePos.y };
         }
     }
 
-    function handleMouseMove() {
+    function handleMouseMove(event) {
         if (!isDrawing) return;
         const mousePos = mouse.position;
         if (currentTool === 'polygon') {
@@ -111,7 +110,8 @@ window.addEventListener('load', () => {
         }
     }
 
-    function handleMouseUp() {
+    function handleMouseUp(event) {
+        if (!isDrawing) return;
         isDrawing = false;
         const mousePos = mouse.position;
         if (currentTool === 'polygon') {
@@ -140,27 +140,29 @@ window.addEventListener('load', () => {
         }
     }
 
-    // --- Event Handlers ---
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
 
     Events.on(mouseConstraint, 'mousedown', (event) => {
         const body = mouseConstraint.body;
-        if (currentTool === 'select') {
-            setSelectedBody(body);
-        }
-        if (body && body.isGear) {
-            draggedGearProps = { radius: body.circleRadius, isMotorized: body.isMotorized };
-            World.remove(world, body.parentComposite);
-            isDrawing = false;
+        if (!body) { setSelectedBody(null); return; }
+        setSelectedBody(body);
+    });
+
+    Events.on(mouseConstraint, 'startdrag', (event) => {
+        const body = event.body;
+        if (body.isGear && body.axleConstraint) {
+            World.remove(world, body.axleConstraint);
         }
     });
 
-    Events.on(mouseConstraint, 'mouseup', (event) => {
-        if (draggedGearProps) {
-            createGear(event.mouse.position.x, event.mouse.position.y, draggedGearProps.radius, draggedGearProps.isMotorized);
-            draggedGearProps = null;
+    Events.on(mouseConstraint, 'enddrag', (event) => {
+        const body = event.body;
+        if (body.isGear) {
+            body.axleConstraint = Constraint.create({ pointA: body.position, bodyB: body, stiffness: 1 });
+            World.add(world, body.axleConstraint);
+            setSelectedBody(body);
         }
     });
 
@@ -174,10 +176,13 @@ window.addEventListener('load', () => {
         
         if (selectedBody && selectedBody.isGear) {
             motorProperty.style.display = 'flex';
+            powerProperty.style.display = 'flex';
             motorCheckbox.checked = selectedBody.isMotorized || false;
+            powerSlider.value = selectedBody.motorPower || 0.5;
             propertyPanel.classList.remove('collapsed');
         } else {
             motorProperty.style.display = 'none';
+            powerProperty.style.display = 'none';
             if (selectedBody) {
                  propertyPanel.classList.remove('collapsed');
             } else {
@@ -192,6 +197,12 @@ window.addEventListener('load', () => {
         }
     });
 
+    powerSlider.addEventListener('input', () => {
+        if (selectedBody && selectedBody.isGear) {
+            selectedBody.motorPower = parseFloat(powerSlider.value);
+        }
+    });
+
     panelHeader.addEventListener('click', () => {
         propertyPanel.classList.toggle('collapsed');
     });
@@ -200,7 +211,7 @@ window.addEventListener('load', () => {
     Events.on(engine, 'beforeUpdate', (event) => {
         const allBodies = Composite.allBodies(world);
         allBodies.forEach(body => {
-            if (body.isMotorized) { body.torque = 0.5; }
+            if (body.isMotorized) { body.torque = (body.motorPower || 0.5) * 5; }
         });
     });
 
@@ -217,23 +228,6 @@ window.addEventListener('load', () => {
                 ctx.beginPath(); ctx.arc(dragStartPoint.x, dragStartPoint.y, radius, 0, 2 * Math.PI);
                 ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2; ctx.stroke();
             }
-        }
-        if (draggedGearProps) { 
-            ctx.save();
-            ctx.globalAlpha = 0.5;
-            const radius = draggedGearProps.radius;
-            ctx.beginPath();
-            ctx.arc(mouse.position.x, mouse.position.y, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = '#555';
-            ctx.fill();
-            for (let i = 0; i < 6; i++) {
-                ctx.moveTo(mouse.position.x, mouse.position.y);
-                ctx.lineTo(mouse.position.x + Math.cos(i * Math.PI / 3) * radius, mouse.position.y + Math.sin(i * Math.PI / 3) * radius);
-            }
-            ctx.strokeStyle = draggedGearProps.isMotorized ? '#ff4500' : '#444';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-            ctx.restore();
         }
         if (canCloseChain) {
             ctx.beginPath(); ctx.arc(chainStartLink.position.x, chainStartLink.position.y, 15, 0, 2 * Math.PI);
@@ -264,7 +258,7 @@ window.addEventListener('load', () => {
     });
 
     // --- Toolbar Logic ---
-    let activeToolButton = document.querySelector(`[data-tool='select']`);
+    let activeToolButton = document.querySelector(`[data-tool='polygon']`);
     if (activeToolButton) activeToolButton.classList.add('active');
     toolbar.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON' && e.target.dataset.tool) {
@@ -272,9 +266,7 @@ window.addEventListener('load', () => {
             currentTool = e.target.dataset.tool;
             activeToolButton = e.target;
             activeToolButton.classList.add('active');
-            if (currentTool !== 'select') {
-                setSelectedBody(null);
-            }
+            setSelectedBody(null);
         }
     });
 
@@ -296,6 +288,7 @@ window.addEventListener('load', () => {
 
     window.addEventListener('keydown', (e) => {
         if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBody) {
+            // When removing a gear, we need to remove its composite (body + axle)
             if (selectedBody.parentComposite) {
                  World.remove(world, selectedBody.parentComposite);
             } else {

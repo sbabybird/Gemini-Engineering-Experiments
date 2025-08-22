@@ -122,6 +122,10 @@ canvas {
     font-size: 0.9em;
 }
 
+#power-slider {
+    width: 120px;
+}
+
 /* Custom Switch (Checkbox) */
 .switch {
     position: relative;
