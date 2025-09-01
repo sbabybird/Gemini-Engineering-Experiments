@@ -1,0 +1,171 @@
+:root {
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --primary-text-color: #e0e0e0;
+    --secondary-text-color: #a0a0a0;
+    --accent-color-1: #00c6ff;
+    --accent-color-2: #0072ff;
+    --ring-bg-color: #333;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--primary-text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+}
+
+.container {
+    background-color: var(--surface-color);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2a2a2a;
+    width: 90%;
+    max-width: 500px;
+}
+
+.header h1 {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+}
+
+.header p {
+    margin: 5px 0 30px;
+    font-size: 1.2rem;
+    color: var(--secondary-text-color);
+}
+
+.progress-container {
+    position: relative;
+    margin-bottom: 30px;
+    display: inline-block;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring__background {
+    stroke: var(--ring-bg-color);
+}
+
+.progress-ring__bar {
+    stroke: url(#progress-gradient);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.progress-text h2 {
+    margin: 0;
+    font-size: 3.5rem;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.progress-text p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--secondary-text-color);
+}
+
+.footer {
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid #2a2a2a;
+    padding-top: 20px;
+}
+
+.info-box h3 {
+    margin: 0 0 5px;
+    font-size: 1rem;
+    color: var(--secondary-text-color);
+}
+
+.info-box p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Gradient for the progress bar */
+.hidden-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    visibility: hidden;
+}
+
+/* --- Life Progress Section --- */
+.life-progress-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #2a2a2a;
+}
+
+.life-progress-section h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.birthday-input-container {
+    margin-bottom: 20px;
+}
+
+.birthday-input-container label {
+    margin-right: 10px;
+    color: var(--secondary-text-color);
+}
+
+input[type="date"] {
+    background-color: #333;
+    color: var(--primary-text-color);
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 8px;
+    font-family: 'Inter', sans-serif;
+}
+
+.life-grid-container {
+    overflow-x: auto; /* Allow horizontal scrolling on small screens */
+}
+
+#life-grid {
+    display: grid;
+    grid-template-columns: repeat(52, 1fr);
+    gap: 3px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.week-box {
+    width: 100%;
+    padding-bottom: 100%; /* Creates a square aspect ratio */
+    background-color: #333;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+.week-box.past {
+    background-color: var(--accent-color-1);
+    background-image: linear-gradient(45deg, var(--accent-color-1), var(--accent-color-2));
+}
+
+.week-box:hover {
+    background-color: #555;
+}

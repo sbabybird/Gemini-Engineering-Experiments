@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year Progress</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1 id="current-date">---</h1>
+            <p id="current-day">---</p>
+        </header>
+
+        <main class="progress-container">
+            <svg class="progress-ring" width="300" height="300">
+                <circle class="progress-ring__background" stroke-width="15" fill="transparent" r="140" cx="150" cy="150"/>
+                <circle class="progress-ring__bar" stroke-width="15" fill="transparent" r="140" cx="150" cy="150"/>
+            </svg>
+            <div class="progress-text">
+                <h2 id="progress-percentage">0.00%</h2>
+                <p>Year Progress</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="info-box">
+                <h3>Day of Year</h3>
+                <p id="day-of-year">- / -</p>
+            </div>
+            <div class="info-box">
+                <h3>Days Remaining</h3>
+                <p id="days-remaining">-</p>
+            </div>
+        </footer>
+
+        <section class="life-progress-section">
+            <h2>Life in Weeks</h2>
+            <div class="birthday-input-container">
+                <label for="birthday">Your Birthday:</label>
+                <input type="date" id="birthday-input">
+            </div>
+            <div class="life-grid-container">
+                <div id="life-grid"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
