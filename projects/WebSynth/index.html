@@ -10,11 +10,181 @@
     <div class="synth-container">
         <canvas id="oscilloscope"></canvas>
         <div class="main-controls">
+            <div class="oscillators-container">
+                <!-- Oscillator 1 -->
+                <div class="oscillator" id="osc-1">
+                    <h3>OSC 1</h3>
+                    <div class="control-group">
+                        <label>Waveform</label>
+                        <select class="waveform-select" data-param="waveform">
+                            <option value="sine">Sine</option>
+                            <option value="square">Square</option>
+                            <option value="sawtooth" selected>Saw</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="noise">Noise</option>
+                        </select>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Volume</label>
+                        <input type="range" data-param="volume" min="0" max="1" value="0.5" step="0.01">
+                        <div class="slider-value">0.50</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Pan</label>
+                        <input type="range" data-param="pan" min="-1" max="1" value="0" step="0.01">
+                        <div class="slider-value">0.00</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Coarse</label>
+                        <input type="range" data-param="coarsePitch" min="-24" max="24" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Fine</label>
+                        <input type="range" data-param="finePitch" min="-100" max="100" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>PW</label>
+                        <input type="range" data-param="pulseWidth" min="0.01" max="0.99" value="0.5" step="0.01">
+                        <div class="slider-value">0.50</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Phase</label>
+                        <input type="range" data-param="phase" min="0" max="360" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Stereo</label>
+                        <input type="range" data-param="stereo" min="0" max="1" value="0" step="0.01">
+                        <div class="slider-value">0.00</div>
+                    </div>
+                    <div class="control-group-inline">
+                        <label for="osc-1-invert">Invert</label>
+                        <input type="checkbox" data-param="invert" class="invert-checkbox" id="osc-1-invert">
+                    </div>
+                </div>
+                <!-- Oscillator 2 -->
+                <div class="oscillator" id="osc-2">
+                    <h3>OSC 2</h3>
+                    <div class="control-group">
+                        <label>Waveform</label>
+                        <select class="waveform-select" data-param="waveform">
+                            <option value="sine">Sine</option>
+                            <option value="square">Square</option>
+                            <option value="sawtooth" selected>Saw</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="noise">Noise</option>
+                        </select>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Volume</label>
+                        <input type="range" data-param="volume" min="0" max="1" value="0.5" step="0.01">
+                        <div class="slider-value">0.50</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Pan</label>
+                        <input type="range" data-param="pan" min="-1" max="1" value="0" step="0.01">
+                        <div class="slider-value">0.00</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Coarse</label>
+                        <input type="range" data-param="coarsePitch" min="-24" max="24" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Fine</label>
+                        <input type="range" data-param="finePitch" min="-100" max="100" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>PW</label>
+                        <input type="range" data-param="pulseWidth" min="0.01" max="0.99" value="0.5" step="0.01">
+                        <div class="slider-value">0.50</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Phase</label>
+                        <input type="range" data-param="phase" min="0" max="360" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Stereo</label>
+                        <input type="range" data-param="stereo" min="0" max="1" value="0" step="0.01">
+                        <div class="slider-value">0.00</div>
+                    </div>
+                    <div class="control-group-inline">
+                        <label for="osc-2-invert">Invert</label>
+                        <input type="checkbox" data-param="invert" class="invert-checkbox" id="osc-2-invert">
+                    </div>
+                </div>
+                <!-- Oscillator 3 -->
+                <div class="oscillator" id="osc-3">
+                    <h3>OSC 3</h3>
+                    <div class="control-group">
+                        <label>Waveform</label>
+                        <select class="waveform-select" data-param="waveform">
+                            <option value="sine">Sine</option>
+                            <option value="square">Square</option>
+                            <option value="sawtooth" selected>Saw</option>
+                            <option value="triangle">Triangle</option>
+                            <option value="noise">Noise</option>
+                        </select>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Volume</label>
+                        <input type="range" data-param="volume" min="0" max="1" value="0.5" step="0.01">
+                        <div class="slider-value">0.50</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Pan</label>
+                        <input type="range" data-param="pan" min="-1" max="1" value="0" step="0.01">
+                        <div class="slider-value">0.00</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Coarse</label>
+                        <input type="range" data-param="coarsePitch" min="-24" max="24" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Fine</label>
+                        <input type="range" data-param="finePitch" min="-100" max="100" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>PW</label>
+                        <input type="range" data-param="pulseWidth" min="0.01" max="0.99" value="0.5" step="0.01">
+                        <div class="slider-value">0.50</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Phase</label>
+                        <input type="range" data-param="phase" min="0" max="360" value="0" step="1">
+                        <div class="slider-value">0</div>
+                    </div>
+                    <div class="slider-wrapper">
+                        <label>Stereo</label>
+                        <input type="range" data-param="stereo" min="0" max="1" value="0" step="0.01">
+                        <div class="slider-value">0.00</div>
+                    </div>
+                    <div class="control-group-inline">
+                        <label for="osc-3-invert">Invert</label>
+                        <input type="checkbox" data-param="invert" class="invert-checkbox" id="osc-3-invert">
+                    </div>
+                </div>
+            </div>
+
             <div class="global-controls">
                 <h2>Global</h2>
                 <div class="control-group preset-group">
                     <label for="preset-select">Presets</label>
                     <select id="preset-select"></select>
+                </div>
+                <div class="control-group">
+                    <h3>Master</h3>
+                    <div class="slider-wrapper">
+                        <label for="masterVolume">Volume</label>
+                        <input type="range" id="masterVolume" min="0" max="1" value="0.5" step="0.01">
+                        <div class="slider-value">0.90</div>
+                    </div>
                 </div>
                 <div class="control-group">
                     <h3>Filter</h3>
@@ -52,109 +222,22 @@
                         <div class="slider-value">0.50</div>
                     </div>
                 </div>
-            </div>
-
-            <div class="oscillators-container">
-                <!-- Oscillator 1 -->
-                <div class="oscillator" id="osc-1">
-                    <h3>OSC 1</h3>
-                    <div class="control-group">
-                        <label>Waveform</label>
-                        <select class="waveform-select">
-                            <option value="sine">Sine</option>
-                            <option value="square">Square</option>
-                            <option value="sawtooth" selected>Saw</option>
-                            <option value="triangle">Triangle</option>
-                            <option value="noise">Noise</option>
-                        </select>
-                    </div>
+                <div class="control-group">
+                    <h3>Glide</h3>
                     <div class="slider-wrapper">
-                        <label>Volume</label>
-                        <input type="range" data-param="volume" min="0" max="1" value="0.5" step="0.01">
-                        <div class="slider-value">0.50</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Pan</label>
-                        <input type="range" data-param="pan" min="-1" max="1" value="0" step="0.01">
+                        <label for="portamento">Time</label>
+                        <input type="range" id="portamento" min="0" max="1" value="0" step="0.01">
                         <div class="slider-value">0.00</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Coarse</label>
-                        <input type="range" data-param="coarsePitch" min="-24" max="24" value="0" step="1">
-                        <div class="slider-value">0</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Fine</label>
-                        <input type="range" data-param="finePitch" min="-100" max="100" value="0" step="1">
-                        <div class="slider-value">0</div>
                     </div>
                 </div>
-                <!-- Oscillator 2 -->
-                <div class="oscillator" id="osc-2">
-                    <h3>OSC 2</h3>
-                    <div class="control-group">
-                        <label>Waveform</label>
-                        <select class="waveform-select">
-                            <option value="sine">Sine</option>
-                            <option value="square">Square</option>
-                            <option value="sawtooth" selected>Saw</option>
-                            <option value="triangle">Triangle</option>
-                            <option value="noise">Noise</option>
+                <div class="control-group">
+                    <h3>Voicing</h3>
+                    <div class="select-wrapper">
+                        <label for="voicing-mode">Mode</label>
+                        <select id="voicing-mode">
+                            <option value="poly" selected>Poly</option>
+                            <option value="mono">Mono</option>
                         </select>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Volume</label>
-                        <input type="range" data-param="volume" min="0" max="1" value="0.5" step="0.01">
-                        <div class="slider-value">0.50</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Pan</label>
-                        <input type="range" data-param="pan" min="-1" max="1" value="0" step="0.01">
-                        <div class="slider-value">0.00</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Coarse</label>
-                        <input type="range" data-param="coarsePitch" min="-24" max="24" value="0" step="1">
-                        <div class="slider-value">0</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Fine</label>
-                        <input type="range" data-param="finePitch" min="-100" max="100" value="0" step="1">
-                        <div class="slider-value">0</div>
-                    </div>
-                </div>
-                <!-- Oscillator 3 -->
-                <div class="oscillator" id="osc-3">
-                    <h3>OSC 3</h3>
-                    <div class="control-group">
-                        <label>Waveform</label>
-                        <select class="waveform-select">
-                            <option value="sine">Sine</option>
-                            <option value="square">Square</option>
-                            <option value="sawtooth" selected>Saw</option>
-                            <option value="triangle">Triangle</option>
-                            <option value="noise">Noise</option>
-                        </select>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Volume</label>
-                        <input type="range" data-param="volume" min="0" max="1" value="0.5" step="0.01">
-                        <div class="slider-value">0.50</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Pan</label>
-                        <input type="range" data-param="pan" min="-1" max="1" value="0" step="0.01">
-                        <div class="slider-value">0.00</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Coarse</label>
-                        <input type="range" data-param="coarsePitch" min="-24" max="24" value="0" step="1">
-                        <div class="slider-value">0</div>
-                    </div>
-                    <div class="slider-wrapper">
-                        <label>Fine</label>
-                        <input type="range" data-param="finePitch" min="-100" max="100" value="0" step="1">
-                        <div class="slider-value">0</div>
                     </div>
                 </div>
             </div>

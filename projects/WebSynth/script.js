@@ -1,366 +1,457 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements ---
-    const keyboardContainer = document.querySelector('.keyboard-container');
-    const presetSelect = document.getElementById('preset-select');
-    const oscilloscopeCanvas = document.getElementById('oscilloscope');
-    const allSliders = document.querySelectorAll('input[type="range"]');
-
-    // --- Audio Context & Master Nodes ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // --- 1. SETUP: AUDIO CONTEXT & WORKLET --- 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const masterGain = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-    const analyser = audioContext.createAnalyser();
-    
-    masterGain.gain.value = 1;
 
-    masterGain.connect(filter);
-    filter.connect(analyser);
-    analyser.connect(audioContext.destination);
+    const oscillatorWorkletCode = `
+        class OscillatorProcessor extends AudioWorkletProcessor {
+            static get parameterDescriptors() {
+                return [
+                    { name: 'frequency', defaultValue: 440, minValue: 20, maxValue: 20000 },
+                    { name: 'pulseWidth', defaultValue: 0.5, minValue: 0.01, maxValue: 0.99 }
+                ];
+            }
 
-    // --- Synth Parameters ---
-    let synthParams = {
-        filter: { cutoff: 20000, resonance: 0 },
-        envelope: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.5 },
-        oscillators: [
-            { waveform: 'sawtooth', volume: 0.5, pan: 0, coarsePitch: 0, finePitch: 0 },
-            { waveform: 'sawtooth', volume: 0.5, pan: 0, coarsePitch: 0, finePitch: 0 },
-            { waveform: 'sawtooth', volume: 0.5, pan: 0, coarsePitch: 0, finePitch: 0 },
-        ]
-    };
+            constructor(options) {
+                super(options);
+                this._phase = 0;
+                this._stereoPhase = 0;
+                this.port.onmessage = (e) => {
+                    if (e.data.waveform) this._waveform = e.data.waveform;
+                    if (e.data.invert !== undefined) this._invert = e.data.invert;
+                    if (e.data.phaseOffset !== undefined) this._phase = e.data.phaseOffset;
+                    if (e.data.stereoPhase !== undefined) this._stereoPhase = e.data.stereoPhase;
+                };
+            }
 
-    let activeNotes = {};
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            process(inputs, outputs, parameters) {
+                const leftOutput = outputs[0][0];
+                const rightOutput = outputs[0][1];
+                const frequency = parameters.frequency;
+                const pulseWidth = parameters.pulseWidth;
+                const inv = this._invert ? -1 : 1;
 
-    // --- Presets ---
+                for (let i = 0; i < leftOutput.length; i++) {
+                    const freq = frequency.length > 1 ? frequency[i] : frequency[0];
+                    if (freq === 0) {
+                        leftOutput[i] = 0;
+                        rightOutput[i] = 0;
+                        continue;
+                    }
+                    const pw = pulseWidth.length > 1 ? pulseWidth[i] : pulseWidth[0];
+                    
+                    const phaseIncrement = freq / sampleRate;
+                    this._phase += phaseIncrement;
+                    if (this._phase > 1.0) this._phase -= 1.0;
+
+                    const calcValue = (phase) => {
+                        switch (this._waveform) {
+                            case 'sine': return Math.sin(phase * 2 * Math.PI);
+                            case 'square': return phase < pw ? 1.0 : -1.0;
+                            case 'sawtooth': return 2.0 * phase - 1.0;
+                            case 'triangle': return 2.0 * (1.0 - 2.0 * Math.abs(phase - 0.5)) - 1.0;
+                            case 'noise': return Math.random() * 2 - 1;
+                        }
+                        return 0;
+                    };
+
+                    leftOutput[i] = calcValue(this._phase) * inv;
+                    let rightPhase = this._phase + this._stereoPhase;
+                    if (rightPhase > 1.0) rightPhase -= 1.0;
+                    rightOutput[i] = calcValue(rightPhase) * inv;
+                }
+                return true;
+            }
+        }
+        registerProcessor('oscillator-processor', OscillatorProcessor);
+    `;
+
+    try {
+        const blob = new Blob([oscillatorWorkletCode], { type: 'application/javascript' });
+        const workletURL = URL.createObjectURL(blob);
+        await audioContext.audioWorklet.addModule(workletURL);
+    } catch (e) {
+        console.error('Failed to load audio worklet.', e);
+        alert('Fatal Error: Audio worklet could not be loaded.');
+        return;
+    }
+
+    // --- 2. VOICE ARCHITECTURE (Best Practice) ---
+    class Voice {
+        constructor(audioContext) {
+            this.audioContext = audioContext;
+            this.output = audioContext.createGain();
+            this.output.gain.value = 0;
+
+            this.oscillators = [];
+            for (let i = 0; i < 3; i++) {
+                const osc = new AudioWorkletNode(this.audioContext, 'oscillator-processor', { outputChannelCount: [2] });
+                const gain = audioContext.createGain();
+                const panner = audioContext.createStereoPanner();
+                osc.connect(gain).connect(panner).connect(this.output);
+                this.oscillators.push({ osc, gain, panner });
+            }
+        }
+
+        triggerAttack(noteNumber, params, fromNoteNumber) {
+            const now = this.audioContext.currentTime;
+            const { attack, decay, sustain } = params.envelope;
+            
+            this.output.gain.cancelScheduledValues(now);
+            this.output.gain.setValueAtTime(this.output.gain.value > 0 ? this.output.gain.value : 0, now);
+            this.output.gain.linearRampToValueAtTime(1.0, now + attack);
+            this.output.gain.linearRampToValueAtTime(sustain, now + attack + decay);
+
+            this.updateFrequency(noteNumber, params, fromNoteNumber);
+            this.updateParams(params);
+        }
+
+        triggerRelease(params) {
+            const now = this.audioContext.currentTime;
+            const { release } = params.envelope;
+            this.output.gain.cancelScheduledValues(now);
+            this.output.gain.setValueAtTime(this.output.gain.value, now);
+            this.output.gain.linearRampToValueAtTime(0, now + release);
+        }
+
+        updateFrequency(noteNumber, params, fromNoteNumber) {
+            const now = this.audioContext.currentTime;
+            const portamentoTime = params.portamento;
+
+            this.oscillators.forEach(({ osc }, i) => {
+                const oscParams = params.oscillators[i];
+                const targetFreq = noteToFrequency(noteNumber, oscParams.coarsePitch, oscParams.finePitch);
+                const startFreq = (fromNoteNumber && portamentoTime > 0) 
+                    ? noteToFrequency(fromNoteNumber, oscParams.coarsePitch, oscParams.finePitch)
+                    : targetFreq;
+                
+                osc.parameters.get('frequency').cancelScheduledValues(now);
+                osc.parameters.get('frequency').setValueAtTime(startFreq, now);
+                if (startFreq !== targetFreq) {
+                    osc.parameters.get('frequency').linearRampToValueAtTime(targetFreq, now + portamentoTime);
+                }
+            });
+        }
+
+        updateParams(params) {
+            this.oscillators.forEach(({ osc, gain, panner }, i) => {
+                const oscParams = params.oscillators[i];
+                const now = this.audioContext.currentTime;
+                gain.gain.setValueAtTime(oscParams.volume, now);
+                panner.pan.setValueAtTime(oscParams.pan, now);
+                osc.parameters.get('pulseWidth').setValueAtTime(oscParams.pulseWidth, now);
+                osc.port.postMessage({ 
+                    waveform: oscParams.waveform, 
+                    invert: oscParams.invert,
+                    phaseOffset: oscParams.phase / 360.0,
+                    stereoPhase: oscParams.stereo / 100.0
+                });
+            });
+        }
+    }
+
+    // --- 3. POLYPHONIC SYNTH CONTROLLER ---
+    class PolySynth {
+        constructor(audioContext, numVoices = 10) {
+            this.audioContext = audioContext;
+            this.params = getDefaultParams();
+
+            this.masterFilter = audioContext.createBiquadFilter();
+            this.analyser = audioContext.createAnalyser();
+            this.masterVolumeNode = audioContext.createGain();
+            this.masterFilter.connect(this.analyser).connect(this.masterVolumeNode).connect(this.audioContext.destination);
+
+            this.voices = Array.from({ length: numVoices }, () => new Voice(audioContext));
+            this.voices.forEach(voice => voice.output.connect(this.masterFilter));
+            
+            this.polyActiveNotes = new Map();
+            this.monoActiveNote = null;
+            this.lastNoteNumber = null;
+            this.nextVoiceIndex = 0;
+            this.setParams(this.params); // Apply initial default params
+        }
+
+        noteOn(noteNumber) {
+            if (this.audioContext.state === 'suspended') this.audioContext.resume();
+            if (this.params.voicing.mode === 'poly') this.noteOnPoly(noteNumber); else this.noteOnMono(noteNumber);
+        }
+
+        noteOff(noteNumber) {
+            if (this.params.voicing.mode === 'poly') this.noteOffPoly(noteNumber); else this.noteOffMono(noteNumber);
+        }
+
+        noteOnPoly(noteNumber) {
+            if (this.polyActiveNotes.has(noteNumber)) return;
+            const voice = this.voices[this.nextVoiceIndex];
+            voice.triggerAttack(noteNumber, this.params, this.lastNoteNumber);
+            this.polyActiveNotes.set(noteNumber, voice);
+            this.lastNoteNumber = noteNumber;
+            this.nextVoiceIndex = (this.nextVoiceIndex + 1) % this.voices.length;
+            document.querySelector(`[data-note-number="${noteNumber}"]`)?.classList.add('active');
+        }
+
+        noteOffPoly(noteNumber) {
+            if (!this.polyActiveNotes.has(noteNumber)) return;
+            const voice = this.polyActiveNotes.get(noteNumber);
+            voice.triggerRelease(this.params);
+            this.polyActiveNotes.delete(noteNumber);
+            document.querySelector(`[data-note-number="${noteNumber}"]`)?.classList.remove('active');
+        }
+
+        noteOnMono(noteNumber) {
+            const monoVoice = this.voices[0];
+            if (this.monoActiveNote) { 
+                monoVoice.updateFrequency(noteNumber, this.params, this.lastNoteNumber);
+            } else { 
+                monoVoice.triggerAttack(noteNumber, this.params, this.lastNoteNumber);
+            }
+            this.lastNoteNumber = noteNumber;
+            this.monoActiveNote = noteNumber;
+            document.querySelectorAll('.key.active').forEach(k => k.classList.remove('active'));
+            document.querySelector(`[data-note-number="${noteNumber}"]`)?.classList.add('active');
+        }
+
+        noteOffMono(noteNumber) {
+            if (this.monoActiveNote === noteNumber) {
+                this.voices[0].triggerRelease(this.params);
+                this.monoActiveNote = null;
+                document.querySelector(`[data-note-number="${noteNumber}"]`)?.classList.remove('active');
+            }
+        }
+
+        setParams(newParams) {
+            const oldMode = this.params.voicing.mode;
+            this.params = newParams;
+            if (oldMode === 'poly' && this.params.voicing.mode === 'mono') {
+                this.polyActiveNotes.forEach(voice => voice.triggerRelease(this.params));
+                this.polyActiveNotes.clear();
+            } else if (oldMode === 'mono' && this.params.voicing.mode === 'poly') {
+                if (this.monoActiveNote) this.voices[0].triggerRelease(this.params);
+                this.monoActiveNote = null;
+            }
+            this.masterVolumeNode.gain.setValueAtTime(this.params.masterVolume, this.audioContext.currentTime);
+            this.masterFilter.frequency.setValueAtTime(this.params.filter.cutoff, this.audioContext.currentTime);
+            this.masterFilter.Q.setValueAtTime(this.params.filter.resonance, this.audioContext.currentTime);
+            this.voices.forEach(voice => voice.updateParams(this.params));
+        }
+    }
+
+    // --- 4. UTILS & INITIALIZATION ---
+    function noteToFrequency(note, coarse, fine) {
+        return 440 * Math.pow(2, (note - 69 + coarse) / 12) * Math.pow(2, fine / 1200);
+    }
+
     const presets = {
-        'default': JSON.parse(JSON.stringify(synthParams)),
-        'piano': {
-            filter: { cutoff: 18000, resonance: 0.1 },
-            envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 0.2 },
+        'default': getDefaultParams(),
+        'powerLead': {
+            masterVolume: 0.8,
+            filter: { cutoff: 6000, resonance: 4 },
+            envelope: { attack: 0.05, decay: 0.2, sustain: 0.9, release: 0.6 },
+            portamento: 0.08,
+            voicing: { mode: 'mono' },
             oscillators: [
-                { waveform: 'square', volume: 0.6, pan: 0, coarsePitch: 0, finePitch: 0 },
-                { waveform: 'triangle', volume: 0.4, pan: -0.05, coarsePitch: 12, finePitch: 3 },
-                { waveform: 'sine', volume: 0.3, pan: 0.05, coarsePitch: 24, finePitch: -3 },
+                { waveform: 'sawtooth', volume: 0.8, pan: -0.1, coarsePitch: 0, finePitch: -4, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0.08 },
+                { waveform: 'square', volume: 0.8, pan: 0.1, coarsePitch: 0, finePitch: 4, pulseWidth: 0.25, phase: 0, invert: false, stereo: -0.08 },
+                { waveform: 'noise', volume: 0.05, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
             ]
         },
-        'violin': {
-            filter: { cutoff: 7500, resonance: 2.5 },
-            envelope: { attack: 0.4, decay: 0.8, sustain: 0.7, release: 0.5 },
-            oscillators: [
-                { waveform: 'sawtooth', volume: 0.5, pan: -0.1, coarsePitch: 0, finePitch: -5 },
-                { waveform: 'sawtooth', volume: 0.5, pan: 0.1, coarsePitch: 0, finePitch: 5 },
-                { waveform: 'sine', volume: 0.3, pan: 0, coarsePitch: 12, finePitch: 0 },
-            ]
-        },
-        'trumpet': {
-            filter: { cutoff: 6000, resonance: 7 },
-            envelope: { attack: 0.05, decay: 0.2, sustain: 0.8, release: 0.25 },
-            oscillators: [
-                { waveform: 'sawtooth', volume: 0.7, pan: 0, coarsePitch: 0, finePitch: 0 },
-                { waveform: 'square', volume: 0.3, pan: 0.05, coarsePitch: 12, finePitch: 0 },
-                { waveform: 'sine', volume: 0.1, pan: -0.05, coarsePitch: -12, finePitch: 0 },
-            ]
-        },
-        'bass': {
-            filter: { cutoff: 800, resonance: 10 },
-            envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.2 },
-            oscillators: [
-                { waveform: 'square', volume: 0.6, pan: -0.1, coarsePitch: -12, finePitch: 0 },
-                { waveform: 'sawtooth', volume: 0.4, pan: 0.1, coarsePitch: -12, finePitch: 5 },
-                { waveform: 'sine', volume: 0.3, pan: 0, coarsePitch: -24, finePitch: 0 },
-            ]
-        },
-        'lead': {
-            filter: { cutoff: 5000, resonance: 5 },
-            envelope: { attack: 0.1, decay: 0.4, sustain: 0.5, release: 0.8 },
-            oscillators: [
-                { waveform: 'sawtooth', volume: 0.5, pan: -0.2, coarsePitch: 0, finePitch: -7 },
-                { waveform: 'square', volume: 0.5, pan: 0.2, coarsePitch: 0, finePitch: 7 },
-                { waveform: 'noise', volume: 0.05, pan: 0, coarsePitch: 0, finePitch: 0 },
-            ]
-        },
-        'pad': {
-            filter: { cutoff: 4000, resonance: 2 },
+        'dreamPad': {
+            masterVolume: 0.7,
+            filter: { cutoff: 3500, resonance: 2 },
             envelope: { attack: 1.5, decay: 1.0, sustain: 0.8, release: 2.0 },
+            portamento: 0.0,
+            voicing: { mode: 'poly' },
             oscillators: [
-                { waveform: 'triangle', volume: 0.5, pan: -0.4, coarsePitch: 0, finePitch: -5 },
-                { waveform: 'sine', volume: 0.5, pan: 0.4, coarsePitch: 0, finePitch: 5 },
-                { waveform: 'sawtooth', volume: 0.3, pan: 0, coarsePitch: -12, finePitch: 0 },
+                { waveform: 'triangle', volume: 0.6, pan: -0.4, coarsePitch: 0, finePitch: -3, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0.2 },
+                { waveform: 'sawtooth', volume: 0.4, pan: 0.4, coarsePitch: 0, finePitch: 3, pulseWidth: 0.5, phase: 90, invert: false, stereo: -0.2 },
+                { waveform: 'sine', volume: 0.2, pan: 0, coarsePitch: 12, finePitch: 0, pulseWidth: 0.5, phase: 180, invert: false, stereo: 0 },
+            ]
+        },
+        'wobbleBass': {
+            masterVolume: 0.9,
+            filter: { cutoff: 800, resonance: 15 },
+            envelope: { attack: 0.02, decay: 0.3, sustain: 0.2, release: 0.3 },
+            portamento: 0.05,
+            voicing: { mode: 'mono' },
+            oscillators: [
+                { waveform: 'sawtooth', volume: 1, pan: 0, coarsePitch: -12, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0.05 },
+                { waveform: 'square', volume: 1, pan: 0, coarsePitch: -12, finePitch: 5, pulseWidth: 0.5, phase: 0, invert: false, stereo: -0.05 },
+                { waveform: 'sine', volume: 0.4, pan: 0, coarsePitch: -24, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+            ]
+        },
+        'analogBrass': {
+            masterVolume: 0.8,
+            filter: { cutoff: 4000, resonance: 2.5 },
+            envelope: { attack: 0.1, decay: 0.4, sustain: 0.7, release: 0.3 },
+            portamento: 0.02,
+            voicing: { mode: 'poly' },
+            oscillators: [
+                { waveform: 'sawtooth', volume: 1, pan: -0.2, coarsePitch: 0, finePitch: -5, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0.1 },
+                { waveform: 'sawtooth', volume: 1, pan: 0.2, coarsePitch: 0, finePitch: 5, pulseWidth: 0.5, phase: 0, invert: false, stereo: -0.1 },
+                { waveform: 'square', volume: 0.3, pan: 0, coarsePitch: 12, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+            ]
+        },
+        'epiano': {
+            masterVolume: 0.9,
+            filter: { cutoff: 12000, resonance: 0.2 },
+            envelope: { attack: 0.01, decay: 0.8, sustain: 0.1, release: 0.4 },
+            portamento: 0.0,
+            voicing: { mode: 'poly' },
+            oscillators: [
+                { waveform: 'sine', volume: 1, pan: -0.1, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0.02 },
+                { waveform: 'triangle', volume: 0.6, pan: 0.1, coarsePitch: 12, finePitch: 3, pulseWidth: 0.5, phase: 0, invert: false, stereo: -0.02 },
+                { waveform: 'sine', volume: 0.4, pan: 0, coarsePitch: 24, finePitch: -3, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+            ]
+        },
+        'laserSfx': {
+            masterVolume: 0.7,
+            filter: { cutoff: 15000, resonance: 0 },
+            envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.2 },
+            portamento: 0.0,
+            voicing: { mode: 'mono' },
+            oscillators: [
+                { waveform: 'sawtooth', volume: 1, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+                { waveform: 'sawtooth', volume: 0, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+                { waveform: 'sawtooth', volume: 0, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
             ]
         }
     };
+
+    function getDefaultParams() {
+        return JSON.parse(JSON.stringify({
+            masterVolume: 0.9,
+            filter: { cutoff: 20000, resonance: 0 },
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.5 },
+            portamento: 0.0,
+            voicing: { mode: 'poly' },
+            oscillators: [
+                { waveform: 'sawtooth', volume: 0.5, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+                { waveform: 'sawtooth', volume: 0.5, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+                { waveform: 'sawtooth', volume: 0.5, pan: 0, coarsePitch: 0, finePitch: 0, pulseWidth: 0.5, phase: 0, invert: false, stereo: 0 },
+            ]
+        }));
+    }
+
+    function initUI(synth) {
+        function loadPreset(name) {
+            const preset = presets[name];
+            if (!preset) return;
+            // Create a deep copy to avoid modifying the original preset object
+            const paramsCopy = JSON.parse(JSON.stringify(preset));
+            // Fill in any missing top-level keys from the default params
+            const defaultParams = getDefaultParams();
+            for (const key in defaultParams) {
+                if (!paramsCopy.hasOwnProperty(key)) {
+                    paramsCopy[key] = defaultParams[key];
+                }
+            }
+            synth.setParams(paramsCopy);
+
+            // Update all UI controls to reflect the new state
+            const params = synth.params;
+            document.querySelectorAll('input[type="range"], input[type="checkbox"], .waveform-select, #voicing-mode, #preset-select').forEach(input => {
+                const id = input.id;
+                if (id === 'voicing-mode') {
+                    input.value = params.voicing.mode;
+                } else if (id === 'preset-select') {
+                    input.value = name;
+                } else if (params.masterVolume !== undefined && id === 'masterVolume') {
+                    input.value = params.masterVolume;
+                } else if (params.filter[id] !== undefined) {
+                    input.value = params.filter[id];
+                } else if (params.envelope[id] !== undefined) {
+                    input.value = params.envelope[id];
+                } else if (params[id] !== undefined) {
+                    input.value = params[id];
+                } else {
+                    const oscWrapper = input.closest('.oscillator');
+                    if (oscWrapper) {
+                        const oscIndex = parseInt(oscWrapper.id.split('-')[1]) - 1;
+                        const param = input.dataset.param;
+                        if (params.oscillators[oscIndex] && params.oscillators[oscIndex][param] !== undefined) {
+                            if (input.type === 'checkbox') {
+                                input.checked = params.oscillators[oscIndex][param];
+                            } else {
+                                input.value = params.oscillators[oscIndex][param];
+                            }
+                        }
+                    }
+                }
+                if(input.type === 'range') updateSliderValue(input);
+            });
+        }
+
+        function populatePresets() {
+            const presetSelect = document.getElementById('preset-select');
+            presetSelect.innerHTML = ''; // Clear previous options
+            for (const name in presets) {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+                presetSelect.appendChild(option);
+            }
+            presetSelect.addEventListener('change', () => loadPreset(presetSelect.value));
+        }
+
+        document.querySelectorAll('input[type="range"], input[type="checkbox"], .waveform-select, #voicing-mode').forEach(input => {
+            const eventType = input.tagName === 'SELECT' || input.type === 'checkbox' ? 'change' : 'input';
+            input.addEventListener(eventType, () => {
+                const params = synth.params;
+                const oscWrapper = input.closest('.oscillator');
+                if (oscWrapper) {
+                    const oscIndex = parseInt(oscWrapper.id.split('-')[1]) - 1;
+                    const param = input.dataset.param;
+                    const value = input.type === 'checkbox' ? input.checked : (input.tagName === 'SELECT' ? input.value : parseFloat(input.value));
+                    params.oscillators[oscIndex][param] = value;
+                } else if (input.id === 'voicing-mode') {
+                    params.voicing.mode = input.value;
+                } else if (input.id === 'masterVolume') {
+                    params.masterVolume = parseFloat(input.value);
+                } else if (params.filter[input.id] !== undefined) {
+                    params.filter[input.id] = parseFloat(input.value);
+                } else if (params.envelope[id] !== undefined) {
+                    params.envelope[id] = parseFloat(input.value);
+                } else if (params[id] !== undefined) {
+                    params[id] = parseFloat(input.value);
+                }
+                synth.setParams(params);
+                if(input.type === 'range') updateSliderValue(input);
+            });
+        });
+
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const keyboardContainer = document.querySelector('.keyboard-container');
+        for (let octave = 3; octave < 6; octave++) {
+            notes.forEach((note, i) => {
+                const key = document.createElement('div');
+                const noteNumber = 12 * (octave + 1) + i;
+                key.classList.add('key', note.includes('#') ? 'black' : 'white');
+                key.dataset.noteNumber = noteNumber;
+                keyboardContainer.appendChild(key);
+                key.addEventListener('mousedown', () => synth.noteOn(noteNumber));
+                key.addEventListener('mouseup', () => synth.noteOff(noteNumber));
+                key.addEventListener('mouseleave', () => synth.noteOff(noteNumber));
+            });
+        }
+        
+        const KEY_MAP = {
+            'a': 60, 'w': 61, 's': 62, 'e': 63, 'd': 64, 'f': 65, 't': 66,
+            'g': 67, 'y': 68, 'h': 69, 'u': 70, 'j': 71, 'k': 72
+        };
+        document.addEventListener('keydown', e => !e.repeat && KEY_MAP[e.key] && synth.noteOn(KEY_MAP[e.key]));
+        document.addEventListener('keyup', e => KEY_MAP[e.key] && synth.noteOff(KEY_MAP[e.key]));
+        
+        populatePresets();
+        loadPreset('default');
+    }
 
     function updateSliderValue(input) {
         const valueDisplay = input.parentElement.querySelector('.slider-value');
         if (valueDisplay) {
             const value = parseFloat(input.value);
-            if (Number.isInteger(parseFloat(input.step))) {
-                valueDisplay.textContent = value.toFixed(0);
-            } else {
-                valueDisplay.textContent = value.toFixed(2);
-            }
-        }
-    }
-    
-    function loadPreset(name) {
-        const preset = presets[name];
-        if (!preset) return;
-
-        synthParams = JSON.parse(JSON.stringify(preset));
-
-        // Update all sliders based on the new synthParams
-        allSliders.forEach(slider => {
-            const id = slider.id;
-            if (id && synthParams.filter[id] !== undefined) {
-                slider.value = synthParams.filter[id];
-            } else if (id && synthParams.envelope[id] !== undefined) {
-                slider.value = synthParams.envelope[id];
-            } else {
-                const oscWrapper = slider.closest('.oscillator');
-                if (oscWrapper) {
-                    const oscIndex = parseInt(oscWrapper.id.split('-')[1]) - 1;
-                    const param = slider.dataset.param;
-                    if (param && synthParams.oscillators[oscIndex][param] !== undefined) {
-                        slider.value = synthParams.oscillators[oscIndex][param];
-                    }
-                }
-            }
-            updateSliderValue(slider);
-        });
-
-        // Update oscillator waveforms
-        document.querySelectorAll('.oscillator').forEach((oscUI, i) => {
-            oscUI.querySelector('.waveform-select').value = synthParams.oscillators[i].waveform;
-        });
-        
-        filter.frequency.setValueAtTime(synthParams.filter.cutoff, audioContext.currentTime);
-        filter.Q.setValueAtTime(synthParams.filter.resonance, audioContext.currentTime);
-    }
-
-    function populatePresets() {
-        presetSelect.innerHTML = '';
-        for (const name in presets) {
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-            presetSelect.appendChild(option);
+            valueDisplay.textContent = Number.isInteger(parseFloat(input.step)) ? value.toFixed(0) : value.toFixed(2);
         }
     }
 
-    // --- Event Listeners ---
-    presetSelect.addEventListener('change', (e) => loadPreset(e.target.value));
-    
-    allSliders.forEach(slider => {
-        slider.addEventListener('input', (e) => {
-            const target = e.target;
-            const value = parseFloat(target.value);
-            updateSliderValue(target);
-
-            const id = target.id;
-            if (id && id in synthParams.filter) {
-                synthParams.filter[id] = value;
-                filter[id].value.setValueAtTime(value, audioContext.currentTime);
-            } else if (id && id in synthParams.envelope) {
-                synthParams.envelope[id] = value;
-            } else {
-                const oscWrapper = target.closest('.oscillator');
-                if (oscWrapper) {
-                    const oscIndex = parseInt(oscWrapper.id.split('-')[1]) - 1;
-                    const param = target.dataset.param;
-                    if (param) {
-                        synthParams.oscillators[oscIndex][param] = value;
-                        // Real-time update for active notes
-                        for (const note in activeNotes) {
-                            const oscNodeGroup = activeNotes[note][oscIndex];
-                            if (oscNodeGroup && oscNodeGroup.osc) {
-                                if (param === 'pan') {
-                                    oscNodeGroup.panner.pan.setValueAtTime(value, audioContext.currentTime);
-                                } else if (param === 'coarsePitch' || param === 'finePitch') {
-                                    if (oscNodeGroup.osc.frequency) {
-                                        oscNodeGroup.osc.frequency.setValueAtTime(
-                                            noteToFrequency(note, synthParams.oscillators[oscIndex].coarsePitch, synthParams.oscillators[oscIndex].finePitch),
-                                            audioContext.currentTime
-                                        );
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    });
-
-    document.querySelectorAll('.waveform-select').forEach((select, i) => {
-        select.addEventListener('change', (e) => {
-            synthParams.oscillators[i].waveform = e.target.value;
-        });
-    });
-
-
-    // --- Audio Logic ---
-    function noteToFrequency(note, coarsePitch, finePitch) {
-        const a4 = 440;
-        const semitones = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const octave = parseInt(note.slice(-1));
-        const keyNumber = semitones.indexOf(note.slice(0, -1));
-        
-        const semitonesFromA4 = 12 * (octave - 4) + (keyNumber - 9) + coarsePitch;
-        const baseFreq = a4 * Math.pow(2, semitonesFromA4 / 12);
-        return baseFreq * Math.pow(2, finePitch / 1200);
-    }
-
-    function playNote(note) {
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        if (activeNotes[note]) return;
-
-        const now = audioContext.currentTime;
-        const { attack, decay, sustain } = synthParams.envelope;
-        
-        const noteOscillators = [];
-
-        synthParams.oscillators.forEach(oscParams => {
-            if (oscParams.volume === 0) {
-                noteOscillators.push(null);
-                return;
-            }
-
-            const gain = audioContext.createGain();
-            const panner = audioContext.createStereoPanner();
-            let osc;
-
-            if(oscParams.waveform === 'noise') {
-                osc = audioContext.createBufferSource();
-                const bufferSize = audioContext.sampleRate * 2;
-                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const output = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                osc.buffer = buffer;
-                osc.loop = true;
-            } else {
-                 osc = audioContext.createOscillator();
-                 osc.type = oscParams.waveform;
-                 osc.frequency.value = noteToFrequency(note, oscParams.coarsePitch, oscParams.finePitch);
-            }
-
-            osc.connect(gain);
-            gain.connect(panner);
-            panner.connect(masterGain);
-
-            panner.pan.value = oscParams.pan;
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(oscParams.volume, now + attack);
-            gain.gain.linearRampToValueAtTime(oscParams.volume * sustain, now + attack + decay);
-
-            osc.start(now);
-            noteOscillators.push({ osc, gain, panner });
-        });
-
-        activeNotes[note] = noteOscillators;
-        document.querySelector(`[data-note="${note}"]`).classList.add('active');
-    }
-
-    function stopNote(note) {
-        if (!activeNotes[note]) return;
-
-        const now = audioContext.currentTime;
-        const { release } = synthParams.envelope;
-
-        activeNotes[note].forEach(node => {
-            if (node) {
-                const { osc, gain } = node;
-                gain.gain.cancelScheduledValues(now);
-                gain.gain.setValueAtTime(gain.gain.value, now);
-                gain.gain.linearRampToValueAtTime(0, now + release);
-                osc.stop(now + release);
-            }
-        });
-
-        delete activeNotes[note];
-        const keyElement = document.querySelector(`[data-note="${note}"]`);
-        if (keyElement) {
-            keyElement.classList.remove('active');
-        }
-    }
-
-    // --- UI Initialization ---
-    const KEY_MAP = {
-        'a': 'C4', 'w': 'C#4', 's': 'D4', 'e': 'D#4', 'd': 'E4', 'f': 'F4',
-        't': 'F#4', 'g': 'G4', 'y': 'G#4', 'h': 'A4', 'u': 'A#4', 'j': 'B4',
-        'k': 'C5', 'o': 'C#5', 'l': 'D5', 'p': 'D#5', ';': 'E5',
-    };
-
-    function createKeyboard() {
-        for (let octave = 3; octave < 6; octave++) {
-            notes.forEach(note => {
-                const key = document.createElement('div');
-                key.classList.add('key');
-                if (note.includes('#')) key.classList.add('black');
-                else key.classList.add('white');
-                
-                const noteName = note + octave;
-                key.dataset.note = noteName;
-                keyboardContainer.appendChild(key);
-
-                key.addEventListener('mousedown', () => playNote(noteName));
-                key.addEventListener('mouseup', () => stopNote(noteName));
-                key.addEventListener('mouseleave', () => stopNote(noteName));
-            });
-        }
-    }
-
-    const canvasCtx = oscilloscopeCanvas.getContext('2d');
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-
-    function drawOscilloscope() {
-        requestAnimationFrame(drawOscilloscope);
-        analyser.getByteTimeDomainData(dataArray);
-        const sliceWidth = oscilloscopeCanvas.width * 1.0 / bufferLength;
-        let x = 0;
-
-        canvasCtx.fillStyle = '#282c34';
-        canvasCtx.fillRect(0, 0, oscilloscopeCanvas.width, oscilloscopeCanvas.height);
-        canvasCtx.lineWidth = 2;
-        canvasCtx.strokeStyle = '#61afef';
-        canvasCtx.beginPath();
-
-        for (let i = 0; i < bufferLength; i++) {
-            const v = dataArray[i] / 128.0;
-            const y = v * oscilloscopeCanvas.height / 2;
-            if (i === 0) canvasCtx.moveTo(x, y);
-            else canvasCtx.lineTo(x, y);
-            x += sliceWidth;
-        }
-        canvasCtx.lineTo(oscilloscopeCanvas.width, oscilloscopeCanvas.height / 2);
-        canvasCtx.stroke();
-    }
-
-
-    // --- Keyboard Input ---
-    document.addEventListener('keydown', (e) => {
-        if (e.repeat) return;
-        const note = KEY_MAP[e.key];
-        if (note) {
-            playNote(note);
-        }
-    });
-
-    document.addEventListener('keyup', (e) => {
-        const note = KEY_MAP[e.key];
-        if (note) {
-            stopNote(note);
-        }
-    });
-
-    // --- Start ---
-    createKeyboard();
-    populatePresets();
-    loadPreset('default');
-    analyser.fftSize = 2048;
-    drawOscilloscope();
+    const synth = new PolySynth(audioContext);
+    initUI(synth);
 });

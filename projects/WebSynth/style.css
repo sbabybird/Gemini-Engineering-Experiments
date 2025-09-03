@@ -28,74 +28,105 @@ body {
 }
 
 .synth-container {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    grid-template-columns: 1fr;
-    gap: 0.5em; /* Reduced */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75em;
     background-color: var(--primary-panel-color);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    padding: 0.5em; /* Reduced */
+    padding: 1em;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     width: 100%;
     max-width: 1200px;
+    overflow: hidden;
 }
 
 #oscilloscope {
-    background-color: #000;
-    border: 1px solid var(--border-color);
-    border-radius: 5px;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 120px; /* Reduced */
+    height: 100%;
+    z-index: 1;
+    opacity: 0.15;
+    background-color: transparent;
+    border: none;
+}
+
+.main-controls, .keyboard-container {
+    position: relative;
+    z-index: 2;
 }
 
 .main-controls {
     display: grid;
-    grid-template-columns: 1fr 3fr;
-    gap: 0.5em; /* Reduced */
+    grid-template-columns: 3fr 1fr;
+    gap: 0.75em;
+    align-items: start;
 }
 
-.global-controls, .oscillator {
+.global-controls {
     background-color: var(--secondary-panel-color);
-    padding: 0.5em; /* Reduced */
+    padding: 1em;
     border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em; /* Reduced */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1em;
+    align-content: start;
 }
 
 .oscillators-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5em; /* Reduced */
+    gap: 0.75em;
+}
+
+.oscillator {
+    background-color: var(--secondary-panel-color);
+    padding: 1em;
+    border-radius: 5px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5em 1em;
+    align-content: start;
 }
 
 h2, h3 {
     margin-top: 0;
     font-weight: 400;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.25em; /* Reduced */
-    margin-bottom: 0.5em; /* Reduced */
+    padding-bottom: 0.5em;
+    margin-bottom: 0.25em;
     text-align: center;
     width: 100%;
+    grid-column: 1 / -1;
 }
 
-.control-group, .slider-wrapper {
-    width: 100%;
+.oscillator .control-group {
+    grid-column: 1 / -1;
 }
 
 .control-group {
-    text-align: center;
+    width: 100%;
+}
+
+.preset-group, .master-group, .voicing-group {
+    grid-column: 1 / -1;
 }
 
 .slider-wrapper {
     position: relative;
     padding-top: 1em;
-    margin-bottom: 0.5em; /* Reduced */
+    margin-bottom: 0.75em;
+}
+
+.slider-wrapper label, .select-wrapper label, .control-group-inline label {
+    font-size: 0.8em;
+    color: var(--text-color-muted);
 }
 
 .slider-wrapper label {
-    font-size: 0.8em; /* Reduced */
     position: absolute;
     top: 0;
     left: 0;
@@ -105,18 +136,17 @@ h2, h3 {
     position: absolute;
     top: 0;
     right: 0;
-    font-size: 0.7em; /* Reduced */
-    background-color: #111;
-    padding: 1px 4px; /* Reduced */
+    font-size: 0.75em;
+    background-color: var(--tertiary-panel-color);
+    padding: 2px 5px;
     border-radius: 3px;
 }
 
-/* --- Horizontal Slider Styles --- */
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 18px; /* Reduced */
+    height: 18px;
     background: transparent;
     outline: none;
     cursor: pointer;
@@ -133,9 +163,9 @@ input[type="range"]::-webkit-slider-runnable-track {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    margin-top: -7px; /* Recalculated */
-    width: 14px; /* Reduced */
-    height: 18px; /* Reduced */
+    margin-top: -7px;
+    width: 14px;
+    height: 18px;
     background: var(--slider-thumb-color);
     border-radius: 3px;
     border: 1px solid #111;
@@ -150,32 +180,16 @@ input[type="range"]::-moz-range-track {
 }
 
 input[type="range"]::-moz-range-thumb {
-    width: 14px; /* Reduced */
-    height: 18px; /* Reduced */
+    width: 14px;
+    height: 18px;
     background: var(--slider-thumb-color);
     border-radius: 3px;
     border: 1px solid #111;
 }
 
-/* Ticks */
-.slider-wrapper::after {
-    content: '';
-    position: absolute;
-    top: 18px; /* Adjusted */
-    left: 0;
+select, input[type="checkbox"] {
     width: 100%;
-    height: 4px; /* Reduced */
-    background-image: repeating-linear-gradient(to right, 
-        var(--text-color) 0, var(--text-color) 1px, 
-        transparent 1px, transparent 25%);
-    pointer-events: none;
-    opacity: 0.5;
-}
-
-
-select {
-    width: 100%;
-    padding: 6px; /* Reduced */
+    padding: 8px;
     background-color: var(--tertiary-panel-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);
@@ -183,11 +197,11 @@ select {
 }
 
 .keyboard-container {
-    display: flex;
-    justify-content: center;
-    padding: 0.5em 0; /* Reduced */
+    padding: 0.75em 0;
     background: var(--tertiary-panel-color);
     border-radius: 5px;
+    display: flex;
+    justify-content: center;
 }
 
 .key {
@@ -202,36 +216,23 @@ select {
 }
 
 .white {
-    width: 40px; /* Reduced */
-    height: 160px; /* Reduced */
+    width: 38px;
+    height: 140px;
     background-color: #abb2bf;
     z-index: 1;
 }
 
 .black {
-    width: 24px; /* Reduced */
-    height: 100px; /* Reduced */
+    width: 22px;
+    height: 90px;
     background-color: #3a4049;
     z-index: 2;
-    margin-left: -12px; /* Recalculated */
-    margin-right: -12px; /* Recalculated */
+    margin-left: -11px;
+    margin-right: -11px;
 }
 
-/* Responsive Design */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     .main-controls {
         grid-template-columns: 1fr;
     }
-    .oscillators-container {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 600px) {
-    body { padding: 0.5em; }
-    .synth-container { padding: 0.5em; }
-    .main-controls { gap: 0.5em; }
-    .global-controls, .oscillator { padding: 0.5em; }
-    .white { width: 35px; height: 150px; }
-    .black { width: 22px; height: 90px; margin-left: -11px; margin-right: -11px; }
 }
