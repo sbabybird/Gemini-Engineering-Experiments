@@ -16,22 +16,14 @@
             <a href="#" role="button" class="secondary" data-tool="line" title="直线">
                 <svg viewBox="0 0 24 24"><path d="M4.22,20.78L20.78,4.22L19.36,2.81L2.81,19.36L4.22,20.78Z"></path></svg>
             </a>
-            <a href="#" role="button" class="secondary" data-tool="polyline" title="多段线">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7 l5 5 l4 -3 l6 8" /></svg>
-            </a>
-            <a href="#" role="button" class="secondary" data-tool="polygon" title="多边形">
-                <svg viewBox="0 0 24 24"><path d="M12,2.5L2,9.8L5.8,21.5H18.2L22,9.8L12,2.5Z" /></svg>
-            </a>
-            <a href="#" role="button" class="secondary" data-tool="pen" title="画笔">
-                <svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z"></path></svg>
-            </a>
+
             <a href="#" role="button" class="secondary" data-tool="rect" title="矩形">
                 <svg viewBox="0 0 24 24"><path d="M3,3V21H21V3H3Z"></path></svg>
             </a>
             <a href="#" role="button" class="secondary" data-tool="circle" title="圆形">
                 <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"></path></svg>
             </a>
-            <a href="#" role="button" id="finish-drawing" class="secondary" title="完成绘制" style="display: none;">完成</a>
+            <a href="#" role="button" id="finish-drawing" class="secondary" title="完成绘制 (Enter)" style="display: none;">完成</a>
             <a href="#" role="button" class="secondary" id="clear-canvas" title="清空" style="margin-left: auto;">
                 <svg viewBox="0 0 24 24"><path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"></path></svg>
             </a>
@@ -56,7 +48,8 @@
     </div>
     <main id="drawing-area"></main>
     <div id="status-bar">
-        <span id="coords">X: 0.00, Y: 0.00</span>
+        <span id="prompt"></span>
+        <span id="coords"></span>
     </div>
     <script src="lib/two.min.js"></script>
     <script src="script.js"></script>
