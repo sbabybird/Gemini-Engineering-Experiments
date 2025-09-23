@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>键盘手入门圣经</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+        h1, h2, h3, h4 {
+            color: #0056b3;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+        }
+        h1 { text-align: center; font-size: 2.8em; border-bottom: 4px solid #0056b3; }
+        h2 { font-size: 2.2em; margin-top: 40px; }
+        h3 { font-size: 1.8em; color: #007bff; border-bottom-style: dashed; }
+        h4 { font-size: 1.4em; color: #17a2b8; border-bottom: none; }
+        .card {
+            background: #fdfdff;
+            border: 1px solid #e9ecef;
+            border-left: 5px solid #007bff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        strong, .highlight {
+            color: #c82333;
+            font-weight: bold;
+        }
+        .key-notation {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #e9ecef;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .finger-notation {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            text-align: center;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .metronome {
+            background-color: #ffc107;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .music-example {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 1.1em;
+            border: 1px solid #dee2e6;
+        }
+        .toc {
+            background: #e9f7ff;
+            border: 1px solid #bde0fe;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+        .toc h2 { border: none; }
+        .toc ul { list-style-type: none; padding-left: 0; }
+        .toc li { margin-bottom: 8px; }
+        .toc a { text-decoration: none; color: #0056b3; font-weight: bold; }
+        .toc a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>键盘手入门圣经</h1>
+
+        <div class="toc">
+            <h2>目录</h2>
+            <ul>
+                <li><a href="#ch1">第一章：绝对入门与乐理基础</a></li>
+                <li><a href="#ch2">第二章：第一阶段 - 基础技术训练 (第1-4周)</a></li>
+                <li><a href="#ch3">第三章：第二阶段 - 和声进阶 (第5-8周)</a></li>
+                <li><a href="#ch4">第四章：第三阶段 - 技巧与表现力扩展</a></li>
+                <li><a href="#ch5">第五章：第四阶段 - 综合应用与实战</a></li>
+                <li><a href="#appendix">附录</a></li>
+            </ul>
+        </div>
+
+        <div id="ch1" class="card">
+            <h2>第一章：绝对入门与乐理基础</h2>
+            <p>在触摸琴键之前，理解音乐的语言至关重要。本章将带你认识键盘、五线谱和节奏，它们是你未来音乐之旅的地图。</p>
+            
+            <h3>1.1 键盘布局</h3>
+            <p>观察键盘，你会发现黑键是按“两个一组”和“三个一组”的规律排列的。在“两个黑键”这组的左边，就是音名 <span class="key-notation">C</span>。你可以此为基准，找到所有的 <span class="key-notation">C</span>。从一个C到下一个C，就是一个“八度”。通常，键盘最中间的那个C被称为“中央C” (C4)。</p>
+
+            <h3>1.2 五线谱入门</h3>
+            <p>五线谱是记录音乐的通用语言。钢琴通常使用“大谱表”，由高音谱表和低音谱表组成。</p>
+            <ul>
+                <li><strong>高音谱表 (Treble Clef)</strong>：通常由右手弹奏，谱号像一个花体的'G'，它的中心环绕的线就是G音。</li>
+                <li><strong>低音谱表 (Bass Clef)</strong>：通常由左手弹奏，谱号像个耳朵，两个点夹住的线是F音。</li>
+            </ul>
+            <h4>如何记谱？</h4>
+            <ul>
+                <li>高音谱表的线 (从下到上): <strong>E, G, B, D, F</strong> (Every Good Boy Does Fine)</li>
+                <li>高音谱表的间 (从下到上): <strong>F, A, C, E</strong> (FACE)</li>
+                <li>低音谱表的线 (从下到上): <strong>G, B, D, F, A</strong> (Good Boys Do Fine Always)</li>
+                <li>低音谱表的间 (从下到上): <strong>A, C, E, G</strong> (All Cows Eat Grass)</li>
+            </ul>
+
+            <h3>1.3 节奏与时值</h3>
+            <p>音符的样子决定了它听起来有多长。</p>
+            <ul>
+                <li><strong>全音符 (Whole Note)</strong>：空心圈，通常在4/4拍里持续4拍。</li>
+                <li><strong>二分音符 (Half Note)</strong>：空心圈带柄，持续2拍。</li>
+                <li><strong>四分音符 (Quarter Note)</strong>：实心圈带柄，持续1拍。这是我们最常用的节拍单位。</li>
+                <li><strong>八分音符 (Eighth Note)</strong>：实心圈带柄带旗帜，持续半拍。</li>
+            </ul>
+            <p><strong>拍号 (Time Signature)</strong>: 像 <span class="key-notation">4/4</span> 这样的分数，告诉你每小节有几拍，以及以哪种音符为一拍。4/4代表“每小节有4拍，以四分音符为一拍”。</p>
+        </div>
+
+        <div id="ch2" class="card">
+            <h2>第二章：第一阶段 - 基础技术训练 (第1-4周)</h2>
+            <p>本阶段的目标是建立正确的手型，训练手指的独立性和均匀性。这是所有未来技巧的基石。</p>
+            <div class="metronome">初始节拍器速度：60 BPM (每分钟60拍)</div>
+
+            <h3>2.1 每日热身：哈农第一练习 (5分钟)</h3>
+            <p>《哈农钢琴练指法》是钢琴学习的“圣经”。它的第一条练习对于初学者建立指力、均匀度和独立性非常有益。</p>
+            <div class="music-example">
+            右手: C-D-E-F-G-F-E-D | C-D-E-F-G-F-E-D ... (上行)
+            指法: 1-2-3-4-5-4-3-2 | 1-2-3-4-5-4-3-2 ...
+            </div>
+            <p>从中央C开始，右手弹奏上述练习，然后将起始音移到D，弹奏 D-E-F-G-A-G-F-E，以此类推，逐步上行一个八度再下行。左手做同样的练习。<strong>重点：</strong>抬高手指，下键清晰，力度均匀。</p>
+
+            <h3>2.2 每周20分钟训练计划</h3>
+            <p>（此处内容为之前生成的详细五日计划，作为本章核心）</p>
+            <h4>星期一：手指灵活日 (音阶)</h4>
+            <p><strong>内容：</strong>C大调音阶。<strong>步骤：</strong>(5分钟)右手练习，(5分钟)左手练习，(10分钟)双手合练。<strong>指法要点：</strong>穿指与跨指的流畅性。</p>
+            
+            <h4>星期二：和弦基础日 (静态和弦)</h4>
+            <p><strong>内容：</strong>C, G, Am, F 四个基础和弦。<strong>步骤：</strong>逐个练习手型，然后进行 <span class="key-notation">C → G → Am → F</span> 的转换练习。</p>
+
+            <h4>星期三：分解和弦日 (动态和弦)</h4>
+            <p><strong>内容：</strong>将周二的和弦分解。<strong>步骤：</strong>左右手分别练习 <span class="key-notation">C-E-G</span> 这样的分解模式，追求音的连接与平滑。</p>
+
+            <h4>星期四：和弦进行日 (双手配合)</h4>
+            <p><strong>内容：</strong><span class="key-notation">C-G-Am-F</span> 和弦进行。<strong>步骤：</strong>左手弹根音，右手弹和弦，练习双手协调。</p>
+
+            <h4>星期五：旋律应用日 (音乐乐趣)</h4>
+            <p><strong>内容：</strong>弹奏《小星星》。<strong>步骤：</strong>右手弹旋律，尝试用左手配上简单的根音或和弦。</p>
+        </div>
+
+        <div id="ch3" class="card">
+            <h2>第三章：第二阶段 - 和声进阶 (第5-8周)</h2>
+            <p>当你的手指对基础和弦有了记忆后，是时候让和声听起来更“专业”了。核心是学习和弦转位。</p>
+            <h3>3.1 和弦转位 (Chord Inversions)</h3>
+            <p>和弦转位能让和弦连接更平滑，减少手的大幅度跳跃。三和弦除了原位，还有两个转位。</p>
+            <ul>
+                <li><strong>原位 (Root Position):</strong> 根音在最下方。如 C和弦: <span class="key-notation">C-E-G</span></li>
+                <li><strong>第一转位 (First Inversion):</strong> 三音在最下方。如 C和弦: <span class="key-notation">E-G-C</span></li>
+                <li><strong>第二转位 (Second Inversion):</strong> 五音在最下方。如 C和弦: <span class="key-notation">G-C-E</span></li>
+            </ul>
+            <h4>练习方法</h4>
+            <p>本阶段的<strong>和弦日</strong>和<strong>和弦进行日</strong>，内容替换为练习C, G, Am, F这四个和弦的原位和转位。例如，在练习 <span class="key-notation">C → G</span> 的进行时，弹奏原位的C (<span class="key-notation">C-E-G</span>)后，可以弹奏G的第一转位 (<span class="key-notation">B-D-G</span>)，你会发现手指移动距离变得非常小。</p>
+
+            <h3>3.2 七和弦入门 (Seventh Chords)</h3>
+            <p>在三和弦基础上再加一个音，就构成了更具色彩的七和弦。</p>
+            <ul>
+                <li><strong>大七和弦 (Major 7th):</strong> Cmaj7 = <span class="key-notation">C-E-G-B</span> (声音温暖、阳光)</li>
+                <li><strong>属七和弦 (Dominant 7th):</strong> G7 = <span class="key-notation">G-B-D-F</span> (声音有张力，迫切想解决到C和弦)</li>
+                <li><strong>小七和弦 (Minor 7th):</strong> Am7 = <span class="key-notation">A-C-E-G</span> (声音慵懒、柔和)</li>
+            </ul>
+            <p>在你的练习中，可以尝试用 Am7 替换 Am，用 G7 替换 G，听听色彩的变化。</p>
+        </div>
+
+        <div id="ch4" class="card">
+            <h2>第四章：第三阶段 - 技巧与表现力扩展</h2>
+            <h3>4.1 新调性：G大调与F大调</h3>
+            <p>将你的音阶和和弦练习扩展到新的调性。</p>
+            <ul>
+                <li><strong>G大调:</strong> 有一个黑键 <span class="key-notation">#F</span>。音阶练习时注意新的指法。</li>
+                <li><strong>F大调:</strong> 有一个黑键 <span class="key-notation">bB</span>。</li>
+            </ul>
+            <h3>4.2 延音踏板 (Sustain Pedal)</h3>
+            <p>踏板是钢琴的“灵魂”。右踏板是延音踏板，踩下后，所有弹奏的音都会持续，直到松开踏板。</p>
+            <h4>练习方法 (切分踏板)</h4>
+            <p>最重要的方法是“后换踏板”或“切分踏板”：<strong>弹下新的和弦，手离开琴键的瞬间，快速地“踩-放”一次踏板。</strong> 这样可以无缝连接和声，而不会混浊。</p>
+            <p>在你的和弦进行日，专门练习这个动作。</p>
+
+            <h3>4.3 力度与奏法</h3>
+            <ul>
+                <li><strong>力度 (Dynamics):</strong> 尝试用不同的力度弹奏。p (piano) 代表弱，f (forte) 代表强。</li>
+                <li><strong>奏法 (Articulation):</strong>
+                    <ul>
+                        <li><strong>连奏 (Legato):</strong> 音与音之间无缝连接，如歌唱一般。这是音阶练习的主要目标。</li>
+                        <li><strong>断奏 (Staccato):</strong> 每个音都弹得短促而有弹性，用手腕的巧劲。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div id="ch5" class="card">
+            <h2>第五章：第四阶段 - 综合应用与实战</h2>
+            <h3>5.1 左手伴奏形态</h3>
+            <p>让你的左手不再只弹根音。</p>
+            <ul>
+                <li><strong>八度分解:</strong> <span class="key-notation">根音(低) → 根音(高)</span>。如 <span class="key-notation">C2 → C3</span>。</li>
+                <li><strong>根音+五音:</strong> <span class="key-notation">根音 → 五音</span>。如C和弦弹 <span class="key-notation">C → G</span>。</li>
+                <li><strong>阿尔贝蒂低音 (Alberti Bass):</strong> 经典伴奏型。如C和弦弹 <span class="key-notation">C(根) → G(五) → E(三) → G(五)</span>。</li>
+            </ul>
+            <p>将这些伴奏形态应用到你的和弦进行练习中。</p>
+
+            <h3>5.2 曲目实战：《欢乐颂》</h3>
+            <p>这首曲子旋律简单，是练习双手配合的绝佳选择。</p>
+            <div class="music-example">
+            右手旋律 (第一句): E E F G | G F E D | C C D E | E D D
+            对应和弦进行:   C . . . | G . . . | C . . . | G . C
+            </div>
+            <p><strong>练习建议：</strong></p>
+            <ol>
+                <li>右手单独练熟旋律。</li>
+                <li>左手单独练习和弦转换。</li>
+                <li>双手合奏：左手在每小节第一拍弹下和弦，右手弹奏旋律。</li>
+            </ol>
+        </div>
+
+        <div id="appendix" class="card">
+            <h2>附录</h2>
+            <h3>练习心法</h3>
+            <ul>
+                <li><strong>化整为零:</strong> 遇到困难的段落，把它单独拿出来反复练习。</li>
+                <li><strong>录音复盘:</strong> 录下自己的演奏，你会发现很多自己听不到的问题。</li>
+                <li><strong>享受过程:</strong> 不要把练琴当成任务，感受指尖流出音乐的快乐。</li>
+            </ul>
+            <h3>推荐资源</h3>
+            <ul>
+                <li><strong>YouTube频道:</strong> Pianote, Hoffman Academy, a_chopin_pro</li>
+                <li><strong>App:</strong> flowkey, Simply Piano (提供互动式学习)</li>
+                <li><strong>网站:</strong> musictheory.net (免费的乐理学习网站)</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; color: #6c757d; margin-top: 40px;">© 为您精心打造的键盘手成长手册。祝您在音乐的海洋中，航行愉快！</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two.js CAD Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="ui-container">
+        <nav class="toolbar">
+            <a href="#" role="button" class="contrast" data-tool="select" title="选择">
+                <svg viewBox="0 0 24 24"><path d="M13.64,21.97C13.14,22.21 12.54,22 12.31,21.5L10.13,16.76L5.29,14.69C4.79,14.46 4.56,13.86 4.8,13.36L11.03,1.66C11.26,1.16 11.86,0.93 12.36,1.17L12.5,1.23L13.64,21.97Z"></path></svg>
+            </a>
+            <a href="#" role="button" class="secondary" data-tool="line" title="直线">
+                <svg viewBox="0 0 24 24"><path d="M4.22,20.78L20.78,4.22L19.36,2.81L2.81,19.36L4.22,20.78Z"></path></svg>
+            </a>
+            <a href="#" role="button" class="secondary" data-tool="polyline" title="多段线">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7 l5 5 l4 -3 l6 8" /></svg>
+            </a>
+            <a href="#" role="button" class="secondary" data-tool="polygon" title="多边形">
+                <svg viewBox="0 0 24 24"><path d="M12,2.5L2,9.8L5.8,21.5H18.2L22,9.8L12,2.5Z" /></svg>
+            </a>
+            <a href="#" role="button" class="secondary" data-tool="pen" title="画笔">
+                <svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z"></path></svg>
+            </a>
+            <a href="#" role="button" class="secondary" data-tool="rect" title="矩形">
+                <svg viewBox="0 0 24 24"><path d="M3,3V21H21V3H3Z"></path></svg>
+            </a>
+            <a href="#" role="button" class="secondary" data-tool="circle" title="圆形">
+                <svg viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"></path></svg>
+            </a>
+            <a href="#" role="button" class="secondary" id="clear-canvas" title="清空" style="margin-left: auto;">
+                <svg viewBox="0 0 24 24"><path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"></path></svg>
+            </a>
+        </nav>
+        <aside class="properties">
+            <article>
+                <header>属性</header>
+                <label for="stroke-color">描边</label>
+                <input type="color" id="stroke-color" value="#00aeff">
+                
+                <label for="stroke-width">宽度</label>
+                <input type="range" min="1" max="200" value="5" id="stroke-width">
+
+                <label for="fill-color">填充</label>
+                <input type="color" id="fill-color" value="#5c6a7e">
+                <label>
+                  <input type="checkbox" id="use-fill" name="use-fill">
+                  启用填充
+                </label>
+            </article>
+        </aside>
+    </div>
+    <main id="drawing-area"></main>
+    <div id="status-bar">
+        <span id="coords">X: 0.00, Y: 0.00</span>
+    </div>
+    <script src="lib/two.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

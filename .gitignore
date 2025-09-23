@@ -15,3 +15,8 @@ build/
 
 # Log files
 *.log
+
+# Gemini CLI generated files
+.playwright-mcp/
+package-lock.json
+baidu_screenshot.png
