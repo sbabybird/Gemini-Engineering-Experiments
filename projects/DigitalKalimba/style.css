@@ -1,11 +1,13 @@
 body {
     margin: 0;
+    /* Ensure body fills the entire viewport */
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
     background-color: #282c34; /* Dark background for elegance */
     font-family: 'Inter', sans-serif;
     color: #e0e0e0;
@@ -17,14 +19,17 @@ body {
 
 #kalimba-container {
     position: relative;
-    width: 300px; /* Base width */
-    height: 450px; /* Base height */
+    /* Make container responsive to viewport size */
+    width: 80vmin; /* 80% of viewport min dimension */
+    height: 120vmin; /* Taller aspect ratio */
+    max-width: 400px; /* Max width for larger screens */
+    max-height: 600px; /* Max height for larger screens */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end; /* Tines at the top of the body */
     margin-bottom: 20px;
-    transform: scale(0.8); /* Slightly smaller for initial view */
+    transform: none; /* Remove initial scaling */
 }
 
 #kalimba-body {
@@ -52,8 +57,7 @@ body {
 }
 
 .tine {
-    width: 18px; /* Base tine width */
-    height: 150px; /* Base tine height */
+    /* Tine width and height will be set by JS, but ensure base styling is good */
     background-color: #c0c0c0; /* Silver color */
     border-radius: 2px 2px 10px 10px;
     border: 1px solid #a0a0a0;
@@ -76,27 +80,4 @@ body {
     color: #b0b0b0;
 }
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    #kalimba-container {
-        width: 250px;
-        height: 400px;
-        transform: scale(0.9);
-    }
-    .tine {
-        width: 16px;
-        height: 130px;
-    }
-}
-
-@media (max-height: 600px) {
-    #kalimba-container {
-        height: 350px;
-        width: 220px;
-        transform: scale(0.8);
-    }
-    .tine {
-        width: 14px;
-        height: 110px;
-    }
-}
+/* No need for specific media queries if using vmin/vmax for scaling */

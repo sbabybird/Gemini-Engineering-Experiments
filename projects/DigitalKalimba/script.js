@@ -52,7 +52,7 @@ function playTineSound(frequency) {
     const gainNode = audioContext.createGain();
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
     gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01); // Attack
-    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5); // Decay
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.0); // Decay over 1 second
 
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
