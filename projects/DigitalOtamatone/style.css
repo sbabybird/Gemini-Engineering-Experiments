@@ -1,0 +1,108 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    font-family: sans-serif;
+    user-select: none; /* Prevent text selection on touch devices */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#otamatone {
+    position: relative;
+    width: 120px; /* Base width, will scale */
+    height: 450px; /* Base height, will scale */
+    display: flex;
+    flex-direction: column-reverse; /* Head at bottom */
+    align-items: center;
+    margin-bottom: 20px;
+    transform: rotate(180deg); /* Rotate to make it look like a note */
+}
+
+#head {
+    width: 100%;
+    height: 180px;
+    background-color: white; /* Changed from pink to white */
+    border-radius: 50% 50% 50% 50%; /* Fully rounded head */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #333;
+    box-sizing: border-box;
+    z-index: 2; /* Ensure head is above stem visually */
+}
+
+#mouth {
+    width: 60%;
+    height: 40%;
+    background-color: #333;
+    border-radius: 0 0 50% 50%;
+    position: absolute;
+    bottom: 20%;
+    transform: scaleY(0.5); /* Closed mouth */
+    transform-origin: bottom;
+    transition: transform 0.1s ease-out;
+}
+
+#head.open #mouth {
+    transform: scaleY(1); /* Open mouth */
+}
+
+#stem {
+    width: 60px; /* Narrower stem */
+    flex-grow: 1;
+    background-color: white; /* Changed from pink to white */
+    border-radius: 30px 30px 0 0; /* Rounded top, flat bottom */
+    border: 2px solid #333;
+    border-bottom: none;
+    box-sizing: border-box;
+    margin-bottom: -2px; /* Overlap with head border */
+    z-index: 1;
+}
+
+#instructions {
+    text-align: center;
+    color: #555;
+    font-size: 0.9em;
+    /* Removed transform: rotate(180deg); */
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    #otamatone {
+        width: 100px;
+        height: 380px;
+    }
+    #stem {
+        width: 50px;
+    }
+    #head {
+        height: 150px;
+    }
+    #instructions {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-height: 600px) {
+    #otamatone {
+        height: 300px;
+        width: 80px;
+    }
+    #stem {
+        width: 40px;
+    }
+    #head {
+        height: 120px;
+    }
+    #instructions {
+        font-size: 0.7em;
+    }
+}
