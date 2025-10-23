@@ -113,8 +113,8 @@ function stopPlaying() {
 // Use pointer events for better cross-device compatibility
 otamatone.addEventListener('pointerdown', startPlaying);
 otamatone.addEventListener('pointermove', updateFrequency);
-otamatone.addEventListener('pointerup', stopPlaying);
-otamatone.addEventListener('pointerleave', stopPlaying); // Stop if pointer leaves the element
+window.addEventListener('pointerup', stopPlaying); // Listen globally for pointer up
+// otamatone.addEventListener('pointerleave', stopPlaying); // Removed: too sensitive for mobile sliding
 
 // Prevent context menu on long press on mobile
 otamatone.addEventListener('contextmenu', (e) => e.preventDefault());
