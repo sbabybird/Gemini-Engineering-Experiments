@@ -19,8 +19,5 @@ Here is a list of the projects currently in this repository.
 | Physics Sandbox | A 2D physics sandbox where you can draw stones, chains, and gears to create complex contraptions.      | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/PhysicsSandbox/)  | [./projects/PhysicsSandbox/](./projects/PhysicsSandbox/) |
 | *...more to come* |                                                                                                         |                                                                                                                   |                                           |
 | Digital Otamatone | A web-based Otamatone simulator with non-linear pitch control and a musical note-like design. | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/DigitalOtamatone/) | [./projects/DigitalOtamatone/](./projects/DigitalOtamatone/) |
-
-
-### Note on Live Demos
-
-To view the live demos, you need to enable GitHub Pages for this repository. After you do, replace `[YOUR_USERNAME]` in the links above with your actual GitHub username.
+| Digital Kalimba   | A web-based Kalimba (thumb piano) simulator with an elegant design and interactive tines.         | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/DigitalKalimba/)   | [./projects/DigitalKalimba/](./projects/DigitalKalimba/)   |
+| *...more to come* |                                                                                                         |                                                                                                                   |                                           |
