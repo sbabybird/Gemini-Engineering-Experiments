@@ -18,6 +18,7 @@ Here is a list of the projects currently in this repository.
 | Pitch Racer   | An arcade-style 2D driving game where voice pitch controls acceleration, featuring procedural terrain. | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/PitchRacer/)      | [./projects/PitchRacer/](./projects/PitchRacer/)      |
 | Physics Sandbox | A 2D physics sandbox where you can draw stones, chains, and gears to create complex contraptions.      | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/PhysicsSandbox/)  | [./projects/PhysicsSandbox/](./projects/PhysicsSandbox/) |
 | *...more to come* |                                                                                                         |                                                                                                                   |                                           |
+| Digital Otamatone | A web-based Otamatone simulator with non-linear pitch control and a musical note-like design. | [**View Live**](https://sbabybird.github.io/Gemini-Engineering-Experiments/projects/DigitalOtamatone/) | [./projects/DigitalOtamatone/](./projects/DigitalOtamatone/) |
 
 
 ### Note on Live Demos
